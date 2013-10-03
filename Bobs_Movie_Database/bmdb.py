@@ -84,9 +84,9 @@ class Database(object):
 # database object for searching and adding new titles to the movie database.
 class GUI(object):
 
-	def __init__(self, db_object):
+	def __init__(self):
 
-		self.my_movies = db_object
+		self.my_movies = Database()
 	
 	def main_menu(self):
 
@@ -272,7 +272,7 @@ print """
 quit = False
 
 movies = Database()
-prompts = GUI(movies)
+prompts = GUI()
 
 # Main program loop.
 while not quit:
