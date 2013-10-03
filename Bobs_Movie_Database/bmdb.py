@@ -159,14 +159,13 @@ class GUI(object):
 			else:
 				pass
 			search_results = self.my_movies.search(answer)
-			print "Found %d matches:" % len(search_results)
-			print "------------------\n"
 			for element in search_results:
 				# This fancy line takes each element in search_results and capitalizes every
 				# word. I could have used element.title() but that method doesn't handle
 				# apostrophes gracefully.
 				element = " ".join(word[0].upper() + word[1:] for word in element.split())
 				print element + "\n"
+			print "\n\nFound %d matches.\n" % len(search_results)
 			answer = raw_input("\nPress enter to search again.").lower()
 			if answer == 'quit()':
 				print "\n" * 50
@@ -203,6 +202,7 @@ Title, Genre, Director(s), Year
 			# Delete the contents of temp_list for the next iteration.
 			del temp_list[:]
 
+		print "\n\n%d Titles\n" % self.my_movies.n	
 		raw_input("\nPress enter to return to main menu.")
 		print "\n" * 50
 
