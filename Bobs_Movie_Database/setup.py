@@ -4,16 +4,16 @@ except ImportError:
 	from distutils.core import setup
 
 config = {
-	'description': 'My Project',
+	'description': 'bmdb organizes movie collections into a searchable database',
 	'author': 'Todd Smith',
-	'url': 'URL to get it at.',
-	'download_url': 'Where to download it.',
+	'url': 'https://github.com/tenspeed/Projects',
+	'download_url': '',
 	'author_email': 'tsmith86@gmail.com',
-	'version': '0.1',
+	'version': '1.1',
 	'install_requires': ['nose'],
-	'packages': ['NAME'],
+	'packages': ['bmdb'],
 	'scripts': [],
-	'name': 'projectname'
+	'name': 'bmdb'
 }
 
 setup(**config)
