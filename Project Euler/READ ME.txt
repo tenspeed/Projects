@@ -1,0 +1,3 @@
+***SPOILERS INSIDE***
+
+These python scripts contain spoilers for problems on Projecteuler.net. Don't view them if you don't want to know the solutions! I haven't included any comments in my code on purpose -- see if you can follow my solutions :)
