@@ -5,10 +5,5 @@
 #
 # What is the largest prime factor of the number 600851475143?
 
-import math
-
-primes = []
-prime_factors = []
-
-for i in range(0, 600851475144):
-	
+# 600851475143 is a prime number so the only factors are itself and 1, right?
+# Is this a trick question?
