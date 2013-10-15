@@ -1,0 +1,11 @@
+$def with (db, movie_list)
+
+<h1>All Movies</h1>
+
+<a href="/main">Return to Main Menu</a>
+
+$for i in range(db.n):
+	<p>
+		$movie_list[i][0]<br/>Genre: $movie_list[i][1]<br/>Director: $movie_list[i][2]<br/>$movie_list[i][3]<br/>$movie_list[i][4]
+		<br/><br/>
+	</p>

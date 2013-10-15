@@ -11,11 +11,6 @@
 # and adding new movies to the database.
 class Database(object):
 
-	def __init__(self):
-
-		# Initialize the movie database by calling the load_db() method.
-		self.load_db()
-
 	# The search() method accepts a query in the form of a string as an argument and
 	# searches through the movie database looking for other strings that match or are
 	# a partial match to the query.
@@ -78,15 +73,28 @@ class Database(object):
 		# Sort the database by alphabetical order.
 		self.moviedb.sort()
 
+	# The view_collection() method sorts the movie database by Title
+	# and displays it to the screen. 
+	def view_collection(self):
+
+		view_list = [[[None] for i in range (5)] for i in range(self.n)]
+		for i in range(self.n):
+			# Fill the temporary list with one set of movie data.
+			for j in range(5):
+				#temp_list.append(self.moviedb[i][j])
+				element = self.moviedb[i][j]
+				element = " ".join(word[0].upper() + word[1:] for word in element.split())
+				view_list[i][j] = element
+		return view_list
 #-----------------------------------------------------------------------------------------------------------
 
 # This is the GUI class. The GUI class handles most of the display to the terminal and feeds user input to a
 # database object for searching and adding new titles to the movie database.
 class GUI(object):
 
-	def __init__(self):
+	def __init__(self, my_movies):
 
-		self.my_movies = Database()
+		self.my_movies = my_movies
 	
 	def main_menu(self):
 
@@ -172,39 +180,6 @@ class GUI(object):
 				return
 			else:
 				pass
-	
-	# The view_collection() method sorts the movie database by Title
-	# and displays it to the screen. 
-	def view_collection(self):
-
-		print "\n" * 50
-		print """
-Title, Genre, Director(s), Year
--------------------------------
-		"""
-		temp_list = []
-		for i in range(self.my_movies.n):
-			# Fill the temporary list with one set of movie data.
-			for j in range(5):
-				temp_list.append(self.my_movies.moviedb[i][j])
-			# Capitolize every word for each piece of movie data in temp_list.
-			for k in range(5):
-				element = temp_list[k]
-				element = " ".join(word[0].upper() + word[1:] for word in element.split())
-				temp_list[k] = element
-			# If the movie is a DVD, make sure 'DVD' is printed and not 'Dvd'
-			if temp_list[4] == 'Dvd':
-				temp_list[4] = 'DVD'
-			else:
-				pass
-			print "%s, %s, %s, %s, %s\n" % (temp_list[0], temp_list[1], temp_list[2],
-											temp_list[3], temp_list[4])
-			# Delete the contents of temp_list for the next iteration.
-			del temp_list[:]
-
-		print "\n\n%d Titles\n" % self.my_movies.n	
-		raw_input("\nPress enter to return to main menu.")
-		print "\n" * 50
 
 	# The get_input() method displays prompts on the screen for the user
 	# to enter new movie information to the database. get_input() properly
@@ -264,16 +239,5 @@ Title, Genre, Director(s), Year
 		
 #-----------------------------------------------------------------------------------------------------------
 
-print "\n" * 50
-print """
-			*** Welcome to Bob's Movie Database ***
-		"""
-# Condition for quitting the program.
-quit = False
-
 movies = Database()
-prompts = GUI()
-
-# Main program loop.
-while not quit:
-	quit = prompts.main_menu()
+movies.load_db()
