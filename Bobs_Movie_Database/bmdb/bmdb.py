@@ -95,7 +95,7 @@ class Database(object):
 			for j in range(6):
 				#temp_list.append(self.moviedb[i][j])
 				element = list_2D[i][j]
-				element = " ".join(word[0].upper() + word[1:] for word in element.split())
+				element = " ".join(word[0].upper() + word[1:].lower() for word in element.split())
 				formatted_list[i][j] = element
 		return formatted_list
 
