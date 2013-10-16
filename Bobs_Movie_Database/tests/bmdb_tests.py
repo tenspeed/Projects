@@ -28,7 +28,6 @@ def test_search():
 	assert_equal(result, [['10 Things I Hate About You', 'Comedy, Drama, Romance', 'Gil Junger', '1999', 'Dvd', 'Heath Ledger, Julia Stiles, Joseph Gordon-levitt'],
 						  ['50/50', 'Comedy, Drama', 'Jonathan Levine', '2011', 'Dvd', 'Joseph Gordon-levitt, Seth Rogen, Anna Kendrick']])
 
-	
 def test_add_new():
 	
 	test_db = Database()
