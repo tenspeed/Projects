@@ -1,6 +1,6 @@
-# bmdb.py version 1.1
+# bmdb.py version 2.0
 # Written by Todd Smith
-# 10/2/2013
+# 10/15/2013
 # Licence:
 #		This file is released under the Lesser GNU Public License.
 #
@@ -11,37 +11,58 @@
 # and adding new movies to the database.
 class Database(object):
 
+	# Upon instantiation, a permanent database property is created by calling the load_db() method.
+	def __init__(self):
+
+		self.the_database = self.load_db()
+
 	# The search() method accepts a query in the form of a string as an argument and
 	# searches through the movie database looking for other strings that match or are
-	# a partial match to the query.
+	# a partial match to the query. If a match is found, search() returns a formated,
+	# 2D list of all the matching movie information.
 	def search(self, query):
 
-		results = []
-
-		for i in range(self.n):
+		temp_list = []
+		query = query.lower()
+		for i in range(len(self.the_database)):
 			for j in range(6):
-				if query in self.moviedb[i][j]:
-					results.append(self.moviedb[i][0])
+				if query in self.the_database[i][j]:
+					for k in range(6):
+						temp_list.append(self.the_database[i][k])
+					break
 				else:
 					pass
+		results = self.list_builder(temp_list, 6)
+		results = self.list_formatter(results)
 		return results
 
-	# The add_movies() method accepts a list of new movie information to add to the
-	# database.
-	def add_movies(self, new_movie_list):
+	# The add_new() method accepts a dictionary of new movie information to add to the
+	# database. add_new() check for duplicates and then if none are found, writes the new
+	# movie information to bmdb.txt and reinitializes the_database.
+	def add_new(self, new_movie_dict):
 
+		keys = ['title', 'genre', 'director', 'year', 'format', 'actors']
 		# Open the bmdb.txt file where the movie information is stored and then
 		# append each new piece of info to the file.
-		with open("bmdb.txt", 'a') as self.f:
-			for i in range(len(new_movie_list)):
-				entry = new_movie_list.pop(0)
-				self.f.write(entry)
+		with open("bmdb.txt", 'a') as f:
+			for i in range(6):
+				new_entry = (new_movie_dict.get(keys[i])).lower()
+				# Since all titles should be unique, if the new title matches any existing
+				# titles in the_database, then the new movie entry is a duplicate and can
+				# be thrown out.
+				if i == 0:
+					duplicate = self.search(new_entry)
+					if len(duplicate) != 0:
+						f.close()
+						return
+				new_entry += ";"
+				f.write(new_entry)
 
-		# Call the load_db() method to re-initialize the database after the new
+		# Call the load_db() method to re-initialize the_database after the new
 		# information has been added.
-		self.load_db()
+		self.the_database = self.load_db()
 
-	# The load_db() method initializes the database. It's called when the database object
+	# The load_db() method initializes the_database. It's called when the database object
 	# is first created and whenever new movie info is added by the user.
 	def load_db(self):
 
@@ -54,190 +75,49 @@ class Database(object):
 		data = data[:-1]
 
 		# The six categories of information in the text file are 'Title', 'Genre', 'Director',
-		# 'Year', 'DVD/Bluray', and 'Actors', in that order. Each entry in the text file is separated by a
+		# 'Year', 'Format', and 'Actors', in that order. Each entry in the text file is separated by a
 		# semi-colon. Here, we take the raw information from the 'data' string and create a list
 		# containing the information for each category by looking for the semi-colons.
 		movies = data.split(';')
 
-		# Create a variable 'n' which will tell us how many movies are in the list.
-		self.n = len(movies) / 6
+		# The data taken from the save file is organized into a 2D list by calling list_builder().
+		moviedb = self.list_builder(movies, 6)
+		return moviedb
+
+	# The list_formatter() method takes an unformatted 2D list and returns a formatted 2D list
+	# with the first letter of every word capitolized. Unformatted lists are for searching while
+	# formatted lists are for printing and displaying.
+	def list_formatter(self, list_2D):
+
+		formatted_list = [[[None] for i in range (6)] for i in range(len(list_2D))]
+		for i in range(len(list_2D)):
+			# Fill the temporary list with one set of movie data.
+			for j in range(6):
+				#temp_list.append(self.moviedb[i][j])
+				element = list_2D[i][j]
+				element = " ".join(word[0].upper() + word[1:] for word in element.split())
+				formatted_list[i][j] = element
+		return formatted_list
+
+	# The list_builder() method takes a 1D list of movie data and an integer value as arguments
+	# and returns a 2D list of sorted movie data. The num_items argument tells list_builder() how
+	# many categories per movie when creating the 2D list.
+	def list_builder(self, list_1D, num_items):
+
+		# num_groups determines how many movies the list will hold.
+		num_groups = len(list_1D) / num_items
 
 		# Here we create a 2D list which will hold all of our movie data. A 2D list
 		# provides us with an intuitive organizational structure for searching and
 		# adding movies to the database.
-		self.moviedb = [[[None] for i in range(6)] for i in range(self.n)]
-		for i in range(self.n):
-			for j in range(6):
-				word = movies.pop(0)
-				self.moviedb[i][j] = word
-		# Sort the database by alphabetical order.
-		self.moviedb.sort()
-
-	# The view_collection() method sorts the movie database by Title
-	# and displays it to the screen. 
-	def view_collection(self):
-
-		view_list = [[[None] for i in range (5)] for i in range(self.n)]
-		for i in range(self.n):
-			# Fill the temporary list with one set of movie data.
-			for j in range(5):
-				#temp_list.append(self.moviedb[i][j])
-				element = self.moviedb[i][j]
-				element = " ".join(word[0].upper() + word[1:] for word in element.split())
-				view_list[i][j] = element
-		return view_list
-#-----------------------------------------------------------------------------------------------------------
-
-# This is the GUI class. The GUI class handles most of the display to the terminal and feeds user input to a
-# database object for searching and adding new titles to the movie database.
-class GUI(object):
-
-	def __init__(self, my_movies):
-
-		self.my_movies = my_movies
-	
-	def main_menu(self):
-
-		dummy_list = []
-
-		print """
-				***   Main Menu   ***
-
-		Please select from the following:
-
-		1) Search by Title, Actors, Genre, Director, or Year
-
-		2) Add a new movie
-
-		3) View entire collection
-
-		4) Quit program
-
-		"""
-		print "\n" * 5
-		answer = raw_input("> ")
-
-		if answer == '1':
-			# Check to see if there are any movies in the database; if not, tell
-			# the user to add some.
-			if self.my_movies.n == 0:
-				print "\n" * 50
-				print "The database is empty! Try adding some movies!"
-				raw_input("\nPress enter to return to main menu.")
-				print "\n" * 50
-				return False
-			else:
-				self.search_prompt()
-		elif answer == '2':
-			print "\n" * 50
-			self.get_input(dummy_list)
-			print "\n" * 50
-		elif answer == '3':
-			# Check to see if there are any movies in the database; if not, tell
-			# the user to add some.
-			if self.my_movies.n == 0:
-				print "\n" * 50
-				print "The database is empty! Try adding some movies!"
-				raw_input("\nPress enter to return to main menu.")
-				print "\n" * 50
-				return False
-			else:
-				self.view_collection()
-		elif answer == '4':
-			print "\n" * 50
-			return True
-		else:
-			raw_input("Not a valid choice. Press enter.")
-			print "\n" * 50
-
-	# The search_prompt() method is called if the user selects the search option
-	# from the main menu. search_prompt() asks the user for a search term and
-	# calls the database object's search() method to look for matches.
-	def search_prompt(self):
-
-		while True:
-			print "\n" * 50
-			print "*** Type quit() at any time to return to the main menu. ***\n\n\n"
-			print "Enter search term:"
-			answer = raw_input("> ").lower()
-			print "\n" * 50
-			if answer == 'quit()':
-				print "\n" * 50
-				return
-			else:
-				pass
-			search_results = self.my_movies.search(answer)
-			for element in search_results:
-				# This fancy line takes each element in search_results and capitalizes every
-				# word. I could have used element.title() but that method doesn't handle
-				# apostrophes gracefully.
-				element = " ".join(word[0].upper() + word[1:] for word in element.split())
-				print element + "\n"
-			print "\n\nFound %d matches.\n" % len(search_results)
-			answer = raw_input("\nPress enter to search again.").lower()
-			if answer == 'quit()':
-				print "\n" * 50
-				return
-			else:
-				pass
-
-	# The get_input() method displays prompts on the screen for the user
-	# to enter new movie information to the database. get_input() properly
-	# formats the new information, puts it in a list, and then calls the database
-	# object's add_movies() method to add the new information to the database.
-	def get_input(self, a_list):
-
-		catagories = ['Title', 'Genre', 'Director', 'Year', 'Format', 'Actors']
-		new_movies = a_list
-		print "*** Type done() when finished entering movies. ***\n"
-		print "*** Type quit() at any time to return to main menu. ***\n"
-		print "*** Incomplete entries will not be saved!!! ***\n\n\n"
-
-		# Collect new movie input until the user types 'quit()' or 'done()'
-		# 'quit()' returns to the main menu without saving any input, while
-		# 'done()' ends the data entry, checks for incomplete movie input and
-		# removes them, and then updates the database.
-		while True:
-			for i in range(6):
-				entry = raw_input("Enter the %s: " % catagories[i]).lower()
-				if entry == 'quit()':
-					print "\n" * 50
-					return
-				elif entry == 'done()':
-					# Check if the user stopped with an incomplete movie entry.
-					# If so, delete the incomplete items before updating the database.
-					if len(new_movies) % 6 != 0:
-						# Calculate how many items need to be removed from the list.
-						num_extra = len(new_movies) - ((len(new_movies) / 6) * 6)
-						# Iterate until all the incomplete items have been removed.
-						for j in range(num_extra):
-							new_movies.pop(-1)
-					else:
-						pass
-					# Update the database with the new movies.
-					self.my_movies.add_movies(new_movies)
-					print "\nMovie database updated!"
-					raw_input("\nPress enter to return to main menu.")
-					print "\n" * 50
-					return
-				else:
-					# Check to make sure that duplicate titles aren't being entered.
-					if i == 0:
-						duplicate = self.my_movies.search(entry)
-						# If a duplicate has been entered, call get_input() recursively,
-						# pass in the current new_movies list, and continue where you
-						# left off.
-						if (len(duplicate) != 0) or ((entry + ";") in new_movies):
-							print "\n" * 50
-							print "This movie is already in the database!\n\n\n"
-							self.get_input(new_movies)
-							return
-						else:
-							pass
-					entry += ";"
-					new_movies.append(entry)
+		list_2D = [[[None] for i in range(num_items)] for i in range(num_groups)]
+		for i in range(num_groups):
+			for j in range(num_items):
+				word = list_1D.pop(0)
+				list_2D[i][j] = word
+		# Sort the list by alphabetical order.
+		list_2D.sort()
+		return list_2D
 		
 #-----------------------------------------------------------------------------------------------------------
-
 movies = Database()
-movies.load_db()
