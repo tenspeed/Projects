@@ -1,12 +1,15 @@
-$def with (movie_list)
+$def with (movie_list, delete)
 
-$if len(movie_list) == 0:
-	<h1 style="font-family: Calibri; color:#E5E4E2">Not Found</h1><br/><br/>
-	<a href="/main" style="font-family: Calibri; color:#E5E4E2">Return to Main Menu</a>
-$else:
-	<h1 style="font-family: Calibri; color:#E5E4E2">Results</h1>
-	<a href="/main" style="font-family: Calibri; color:#E5E4E2">Return to Main Menu</a><br/>
-	$for i in range(len(movie_list)):
-		<p style="font-family: Calibri; font-size: 20px; color:#E5E4E2">
-		$movie_list[i][0]<br/>Genre: $movie_list[i][1]<br/>Director: $movie_list[i][2]<br/>$movie_list[i][3]<br/>Formats: $movie_list[i][4]<br/>Actors: $movie_list[i][5]<br/><br/>
-		</p>
+$if delete == False:
+
+	$if len(movie_list) == 0:
+		<h1 style="font-family:Calibri; color:#E5E4E2">Not Found</h1><br/><br/>
+		<a href="/main" style="font-family:Calibri; color:#E5E4E2">Return to Main Menu</a>
+	$else:
+		<h1 style="font-family:Calibri; color:#E5E4E2">Results</h1>
+		<a href="/main" style="font-family:Calibri; color:#E5E4E2">Return to Main Menu</a><br/><br/>
+		<h3 style="font-family:Calibri; color:#E5E4E2">Showing $len(movie_list) Titles:</h3><br/>
+		$for i in range(len(movie_list)):
+			<p style="font-family:Calibri; color:#E5E4E2">
+			<strong>$movie_list[i][0]</strong><br/>Genre: $movie_list[i][1]<br/>Director: $movie_list[i][2]<br/>$movie_list[i][3]<br/>Formats: $movie_list[i][4]<br/>Actors: $movie_list[i][5]<br/><br/>
+			</p>

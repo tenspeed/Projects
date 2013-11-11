@@ -23,10 +23,12 @@ class Database(object):
 	def search(self, query):
 
 		temp_list = []
+		indices = []
 		query = query.lower()
 		for i in range(len(self.the_database)):
 			for j in range(6):
 				if query in self.the_database[i][j]:
+					indices.append(i)
 					for k in range(6):
 						temp_list.append(self.the_database[i][k])
 					break
@@ -34,7 +36,7 @@ class Database(object):
 					pass
 		results = self.list_builder(temp_list, 6)
 		results = self.list_formatter(results)
-		return results
+		return results, indices
 
 	# The add_new() method accepts a dictionary of new movie information to add to the
 	# database. add_new() check for duplicates and then if none are found, writes the new
@@ -44,14 +46,14 @@ class Database(object):
 		keys = ['title', 'genre', 'director', 'year', 'format', 'actors']
 		# Open the bmdb.txt file where the movie information is stored and then
 		# append each new piece of info to the file.
-		with open("bmdb.txt", 'a') as f:
+		with open("bmdb.txt", "a") as f:
 			for i in range(6):
 				new_entry = (new_movie_dict.get(keys[i])).lower()
 				# Since all titles should be unique, if the new title matches any existing
 				# titles in the_database, then the new movie entry is a duplicate and can
 				# be thrown out.
 				if i == 0:
-					duplicate = self.search(new_entry)
+					duplicate, trash = self.search(new_entry)
 					if len(duplicate) != 0:
 						f.close()
 						return
@@ -68,7 +70,7 @@ class Database(object):
 
 		# Open the text file where the movie information is saved and read it into the variable 'data'
 		# as a string.
-		with open("bmdb.txt", 'a+') as f:
+		with open("bmdb.txt", "a+") as f:
 			data = f.read()
 
 		# Remove the last ';' from the end of the string.
@@ -118,6 +120,23 @@ class Database(object):
 		# Sort the list by alphabetical order.
 		list_2D.sort()
 		return list_2D
-		
+
+	def update_db(self, list_2D):
+		with open("bmdb.txt", "w") as f:
+			for i in range(len(list_2D)):
+				for j in range(6):
+					entry = list_2D[i][j]
+					entry += ";"
+					f.write(entry)
+		self.load_db()
+
+	def delete_entries(self, index_list):
+		count = 0
+		for element in index_list:
+			element -= count
+			self.the_database.pop(element)
+			count += 1
+		self.update_db(self.the_database)
+
 #-----------------------------------------------------------------------------------------------------------
 movies = Database()
