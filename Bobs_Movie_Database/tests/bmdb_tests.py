@@ -42,4 +42,4 @@ def test_add_new():
 def test_update_db():
 
 	test_db = Database()
-	test_db.update_db(test_db.the_database)
+	test_db.save_db(test_db.the_database)

@@ -121,7 +121,7 @@ class Database(object):
 		list_2D.sort()
 		return list_2D
 
-	def update_db(self, list_2D):
+	def save_db(self, list_2D):
 		with open("bmdb.txt", "w") as f:
 			for i in range(len(list_2D)):
 				for j in range(6):
@@ -130,11 +130,14 @@ class Database(object):
 					f.write(entry)
 		self.load_db()
 
-	def delete_entries(self, index_list):
+	def delete_entries(self, del_movie_dict):
 		count = 0
-		for element in index_list:
-			element -= count
-			self.the_database.pop(element)
+		indices = del_movie_dict.values()
+		indices.sort()
+		for i in range(len(indices)):
+			indices[i] = int(indices[i])
+			indices[i] -= count
+			deleted_movie = self.the_database.pop(indices[i])
 			count += 1
 		self.update_db(self.the_database)
 
