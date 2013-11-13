@@ -1,0 +1,7 @@
+include templates/main.html
+include templates/add.html
+include templates/search.html
+include templates/results.html
+include templates/delete.html
+include templates/layout.html
+include sessions/*.

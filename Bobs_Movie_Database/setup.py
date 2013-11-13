@@ -1,19 +1,9 @@
-try:
-	from setuptools import setup
-except ImportError:
-	from distutils.core import setup
+from setuptools import setup
 
-config = {
-	'description': 'bmdb organizes movie collections into a searchable database',
-	'author': 'Todd Smith',
-	'url': 'https://github.com/tenspeed/Projects',
-	'download_url': '',
-	'author_email': 'tsmith86@gmail.com',
-	'version': '1.1',
-	'install_requires': ['nose'],
-	'packages': ['bmdb'],
-	'scripts': [],
-	'name': 'bmdb'
-}
-
-setup(**config)
+setup(name='bmdb',
+	  version='2.0',
+	  description='bmdb is a program to keep track of your movie collection by creating a searchable database',
+	  url='http://www.github.com/tenspeed',
+	  author='Todd Smith',
+	  author_email='tsmith86@gmail.com',
+	  packages=['bmdb', 'bin'],)

@@ -5,7 +5,7 @@
 #		This file is released under the Lesser GNU Public License.
 #
 #-----------------------------------------------------------------------------------------------------------
-
+import os
 # This is the Database class. The Database class handles any task relating to the movie database including,
 # opening the file where the movie information is stored, searching for movies based on search criteria,
 # and adding new movies to the database.
@@ -23,12 +23,10 @@ class Database(object):
 	def search(self, query):
 
 		temp_list = []
-		indices = []
 		query = query.lower()
 		for i in range(len(self.the_database)):
 			for j in range(6):
 				if query in self.the_database[i][j]:
-					indices.append(i)
 					for k in range(6):
 						temp_list.append(self.the_database[i][k])
 					break
@@ -36,7 +34,7 @@ class Database(object):
 					pass
 		results = self.list_builder(temp_list, 6)
 		results = self.list_formatter(results)
-		return results, indices
+		return results
 
 	# The add_new() method accepts a dictionary of new movie information to add to the
 	# database. add_new() check for duplicates and then if none are found, writes the new
@@ -53,7 +51,7 @@ class Database(object):
 				# titles in the_database, then the new movie entry is a duplicate and can
 				# be thrown out.
 				if i == 0:
-					duplicate, trash = self.search(new_entry)
+					duplicate = self.search(new_entry)
 					if len(duplicate) != 0:
 						f.close()
 						return
@@ -95,7 +93,6 @@ class Database(object):
 		for i in range(len(list_2D)):
 			# Fill the temporary list with one set of movie data.
 			for j in range(6):
-				#temp_list.append(self.moviedb[i][j])
 				element = list_2D[i][j]
 				element = " ".join(word[0].upper() + word[1:].lower() for word in element.split())
 				formatted_list[i][j] = element
@@ -139,7 +136,7 @@ class Database(object):
 			indices[i] -= count
 			deleted_movie = self.the_database.pop(indices[i])
 			count += 1
-		self.update_db(self.the_database)
+		self.save_db(self.the_database)
 
 #-----------------------------------------------------------------------------------------------------------
 movies = Database()
