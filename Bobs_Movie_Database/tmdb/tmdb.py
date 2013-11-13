@@ -1,11 +1,10 @@
-# bmdb.py version 2.0
+# tmdb.py version 2.0
 # Written by Todd Smith
 # 10/15/2013
 # Licence:
 #		This file is released under the Lesser GNU Public License.
 #
 #-----------------------------------------------------------------------------------------------------------
-import os
 # This is the Database class. The Database class handles any task relating to the movie database including,
 # opening the file where the movie information is stored, searching for movies based on search criteria,
 # and adding new movies to the database.
@@ -47,6 +46,7 @@ class Database(object):
 		with open("bmdb.txt", "a") as f:
 			for i in range(6):
 				new_entry = (new_movie_dict.get(keys[i])).lower()
+				print new_entry
 				# Since all titles should be unique, if the new title matches any existing
 				# titles in the_database, then the new movie entry is a duplicate and can
 				# be thrown out.
@@ -55,6 +55,8 @@ class Database(object):
 					if len(duplicate) != 0:
 						f.close()
 						return
+				if len(new_entry) == 0:
+					new_entry = "n/a"
 				new_entry += ";"
 				f.write(new_entry)
 
@@ -94,7 +96,10 @@ class Database(object):
 			# Fill the temporary list with one set of movie data.
 			for j in range(6):
 				element = list_2D[i][j]
-				element = " ".join(word[0].upper() + word[1:].lower() for word in element.split())
+				if element == "n/a":
+					element = element.upper()
+				else:
+					element = " ".join(word[0].upper() + word[1:].lower() for word in element.split())
 				formatted_list[i][j] = element
 		return formatted_list
 
@@ -139,4 +144,4 @@ class Database(object):
 		self.save_db(self.the_database)
 
 #-----------------------------------------------------------------------------------------------------------
-movies = Database()
+#movies = Database()

@@ -1,5 +1,5 @@
 from nose.tools import *
-from bmdb.bmdb import Database
+from tmdb.tmdb import Database
 
 def test_list_builder():
 
@@ -13,9 +13,9 @@ def test_list_formatter():
 
 	test_db = Database()
 	test_list = test_db.list_formatter([['one', 'two', 'three', 'four', 'five', 'six'],
-										 ['seven', 'eight', 'nine', 'ten', 'eleven', 'n/a']])
+										 ['seven', 'eight', 'nine', 'ten', 'eleven', 'twelve']])
 	assert_equal(test_list, [['One', 'Two', 'Three', 'Four', 'Five', 'Six'],
-								['Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'N/a']])
+								['Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve']])
 	a_list = [['ThIs', 'THAT', 'whut', 'evEN', 'Is', 'SLKD'], ['IDUNNO', 'huH', 'HOw', 'blAh', 'bbBBaN', 'LaST onE BOY']]
 	assert_equal(test_db.list_formatter(a_list), [['This', 'That', 'Whut', 'Even', 'Is', 'Slkd'], ['Idunno', 'Huh', 'How', 'Blah', 'Bbbban', 'Last One Boy']])
 
@@ -37,11 +37,11 @@ def test_add_new():
 	result = test_db.search('hunger games')
 	assert_equal(result, [['The Hunger Games', 'Adventure, Sci-fi, Thriller', 'Gary Ross', '2012', 'Dvd', 'Jennifer Lawrence, Josh Hutcherson, Liam Hemsworth']])
 
-	new_movie = {'director': '', 'format': 'dVD', 'title': 'X-men', 'year': '', 'genre': 'Action',
-				 'actors': ''}
+	new_movie = {'director': u'', 'format': 'dVD', 'title': 'X-men', 'year': u'', 'genre': 'Action',
+				 'actors': u''}
 	test_db.add_new(new_movie)
 	result = test_db.search('x-men')
-	assert_equal(result, [['X-men', 'Action', 'N/a', 'N/a', 'Dvd', 'N/a']])
+	assert_equal(result, [['X-men', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A']])
 
 def test_update_db():
 

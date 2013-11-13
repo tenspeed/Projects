@@ -1,7 +1,7 @@
 from nose.tools import *
 from bin.app import app
 from tests.tools import assert_response
-from bmdb.bmdb import Database
+from tmdb.tmdb import Database
 
 def test_index():
 	# check that we get a 303 on the / URL
