@@ -5,50 +5,27 @@
 #
 # Find the sum of all the primes below two million.
 
-def is_prime(num, prime_list):
-	for i in range(len(prime_list)):
-		if num % prime_list[i] == 0:
-			return False
-		else:
-			if i == (len(prime_list) - 1):
-				return True
-
-def get_primes(num, prime_list):
-	while True:	
-		if is_prime(num, prime_list):
-			prime_list.append(num)
-			return prime_list
-		else:
-			num += 1
-
 primes = []
-compositions = []
 
-for i in range(2, 2000000):
+for i in range(2, 2000001):
 	primes.append(i)
 
 p_index =  0
 p = primes[p_index]
 
 while p != primes[-1]:
+	index_shift = 0
 	p = primes[p_index]
 	print "p: %d" % p
 	print "last num: %d" % primes[-1]
 
 	for j in range(len(primes)):
-		if primes[j] == p:
+		if primes[j - index_shift] == p:
 			pass
-		elif primes[j] % p == 0:
-			compositions.append(j)
-
-	index_shift = 0
-
-	if len(compositions) != 0:
-		for k in range(len(compositions)):
-			primes.pop((compositions[k] - index_shift))
+		elif primes[j - index_shift] % p == 0:
+			primes.pop(j - index_shift)
 			index_shift += 1
 
-	compositions = []
 	p_index += 1
 
 p_sum = 0
