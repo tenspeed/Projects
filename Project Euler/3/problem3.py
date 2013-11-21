@@ -25,7 +25,7 @@ def is_prime(num, prime_list):
 	return False
 
 p_factors = []
-primes = [2, 3, 5, 7, 9]
+primes = [2, 3, 5, 7]
 quotient = 600851475143
 p_found = False
 go = True

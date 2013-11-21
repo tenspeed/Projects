@@ -20,7 +20,7 @@ def get_primes(num, primes_list):
 		else:
 			num += 1
 
-primes = [2, 3, 5, 7, 9]
+primes = [2, 3, 5, 7]
 
 while len(primes) <= 10001:
 	primes = get_primes((primes[-1] + 1), primes )
