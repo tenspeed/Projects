@@ -1,0 +1,4 @@
+movie has many director and director has many movie
+movie has many genre and genre has many movie
+movie has many actor and actor has many movie
+movie has many format and format has many movie
