@@ -14,62 +14,34 @@ class Database(object):
 
 	# Upon instantiation, a permanent database property is created by calling the load_db() method.
 	def __init__(self):
-		pass
+		print "Database Object Created"
 	# The search() method accepts a query in the form of a string as an argument and
 	# searches through the movie database looking for other strings that match or are
 	# a partial match to the query. If a match is found, search() returns a formated,
 	# 2D list of all the matching movie information.
 	def search(self, query):
-
-		temp_list = []
-		query = query.lower()
-		for i in range(len(self.the_database)):
-			for j in range(6):
-				if query in self.the_database[i][j]:
-					for k in range(6):
-						temp_list.append(self.the_database[i][k])
-					break
-				else:
-					pass
-		results = self.list_builder(temp_list, 6)
-		results = self.list_formatter(results)
-		return results
+		pass
 
 	# The add_new() method accepts a dictionary of new movie information to add to the
 	# database. add_new() check for duplicates and then if none are found, writes the new
 	# movie information to bmdb.txt and reinitializes the_database.
-	def add_new(self, new_movie_dict):
+	def add_new(self, new_movie_list):
 
 		keys = ['title', 'genre', 'director', 'year', 'format', 'actors']
-		# Open the bmdb.txt file where the movie information is stored and then
-		# append each new piece of info to the file.
-		with open("bmdb.txt", "a") as f:
-			for i in range(6):
-				new_entry = (new_movie_dict.get(keys[i])).lower()
-				print new_entry
-				# Since all titles should be unique, if the new title matches any existing
-				# titles in the_database, then the new movie entry is a duplicate and can
-				# be thrown out.
-				if i == 0:
-					duplicate = self.search(new_entry)
-					if len(duplicate) != 0:
-						f.close()
-						return
-				if len(new_entry) == 0:
-					new_entry = "n/a"
-				new_entry += ";"
-				f.write(new_entry)
+		
+		engine = create_engine("sqlite:///bmdb.db")
 
-		# Call the load_db() method to re-initialize the_database after the new
-		# information has been added.
-		self.the_database = self.load_db()
+		conn = engine.connect()
 
+		ins = conn.movie.insert().values(title=new_movie_list[keys[0]], year=new_movie_list[keys[3]])
+
+		result = conn.execute(ins)
 	# The load_db() method initializes the_database. It's called when the database object
 	# is first created and whenever new movie info is added by the user.
 	def create_db(self):
-
+		
 		engine = create_engine("sqlite:///bmdb.db")
-
+		
 		metadata = MetaData()
 
 		movie = Table('movie', metadata,
@@ -123,6 +95,7 @@ class Database(object):
 						   )
 
 		metadata.create_all(engine)
+
 	# The list_formatter() method takes an unformatted 2D list and returns a formatted 2D list
 	# with the first letter of every word capitolized. Unformatted lists are for searching while
 	# formatted lists are for printing and displaying.
@@ -167,5 +140,5 @@ class Database(object):
 		pass
 
 #-----------------------------------------------------------------------------------------------------------
-movies = Database()
-movies.create_db()
+#movies = Database()
+#movies.create_db()
