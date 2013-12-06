@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}Search{% endblock %}
+{% block head %}
+	{{super()}}
+{% endblock %}
+{% block content %}
+	<h1>Search</h1>
+	<form action="/search/" method="POST">
+		<input type="text", name='query'>
+		<br/><br/>
+		<input type="submit", value='Search'>
+	</form>
+	<br/><br/>
+	<a href="/" class="important">Return to Main Menu</a>
+{% endblock %}

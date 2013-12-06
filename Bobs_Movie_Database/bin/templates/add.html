@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Add Movies{% endblock %}
+{% block head %}
+	{{super()}}
+{% endblock %}
+{% block content %}
+	<form action="/add/" method="POST">
+		Title:<br/><input type="text" name="title">
+		<br/><br/>
+		Genre:<br/><input type="text" name="genre">
+		<br/><br/>
+		Director:<br/><input type="text" name="director">
+		<br/><br/>
+		Year:<br/><input type="text" name="year">
+		<br/><br/>
+		Format:<br/><input type="text" name="format">
+		<br/><br/>
+		Actors:<br/><input type="text" name="actors">
+		<br/><br/>
+		<input type="submit", value='Submit'>
+	</form>
+	<br/>
+	<a href="/" class="important">Return to Main Menu</a>
+{% endblock %}

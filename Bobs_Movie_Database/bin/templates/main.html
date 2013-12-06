@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Main Page{% endblock %}
+{% block head %}
+	{{super()}}
+{% endblock %}
+{% block content %}
+	<h1>Main Page</h1>
+	<h3>Welcome to Bob's Movie Database</h3>
+	<br/>
+	<a href="/search/" class="important">Search</a>
+	<br/><br/>
+	<a href="/add/" class="important">Add Movies</a>
+	<br/><br/>
+	<a href="/collection/" class="important">View Entire Collection</a>
+	<br/><br/><br/><br/><br/>
+	<a href="/delete/" class="important">Delete Movies</a>
+{% endblock %}
