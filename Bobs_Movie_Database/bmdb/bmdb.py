@@ -14,7 +14,7 @@ class Database(object):
 
 	# Upon instantiation, a permanent database property is created by calling the load_db() method.
 	def __init__(self):
-		print "Database Object Created"
+		pass
 	# The search() method accepts a query in the form of a string as an argument and
 	# searches through the movie database looking for other strings that match or are
 	# a partial match to the query. If a match is found, search() returns a formated,
@@ -28,10 +28,6 @@ class Database(object):
 	def add_new(self, new_movie_list):
 
 		keys = ['title', 'genre', 'director', 'year', 'format', 'actors']
-		
-		engine = create_engine("sqlite:///bmdb.db")
-
-		conn = engine.connect()
 
 		ins = conn.movie.insert().values(title=new_movie_list[keys[0]], year=new_movie_list[keys[3]])
 
@@ -40,22 +36,22 @@ class Database(object):
 	# is first created and whenever new movie info is added by the user.
 	def create_db(self):
 		
-		engine = create_engine("sqlite:///bmdb.db")
-		
+		engine = create_engine("sqlite:///moviedb.db")
+		print "engine created"
 		metadata = MetaData()
-
+		print "metadata object created"
 		movie = Table('movie', metadata,
 					  Column('id', Integer, primary_key=True),
 					  Column('title', String),
 					  Column('year', Integer)
 					 )
-
-		director = Table('director', metadata,
-						 Column('id', Integer, primary_key=True),
-						 Column('first_name', String),
-						 Column('last_name', String),
-						 Column('fullname', String)
-						)
+		print "movie table defined"
+		#director = Table('director', metadata,
+		#				 Column('id', Integer, primary_key=True),
+		#				 Column('first_name', String),
+		#				 Column('last_name', String),
+		#				 Column('fullname', String)
+		#				)
 
 		actor = Table('actor', metadata,
 					  Column('id', Integer, primary_key=True),
@@ -63,38 +59,118 @@ class Database(object):
 					  Column('last_name', String),
 					  Column('fullname', String)
 					 )
+		print "actor table defined"
+		#format = Table('format', metadata,
+		#			   Column('id', Integer, primary_key=True),
+		#			   Column('format_type', String)
+		#			  )
 
-		format = Table('format', metadata,
-					   Column('id', Integer, primary_key=True),
-					   Column('format_type', String)
-					  )
+		#genre = Table('genre', metadata,
+		#			  Column('id', Integer, primary_key=True),
+		#			  Column('genre_name', String)
+		#			 )
 
-		genre = Table('genre', metadata,
-					  Column('id', Integer, primary_key=True),
-					  Column('genre_name', String)
-					 )
-
-		movie_director = Table('movie_director', metadata,
-							   Column('movie_id', Integer),
-							   Column('director_id', Integer)
-							  )
+		#movie_director = Table('movie_director', metadata,
+		#					   Column('movie_id', Integer),
+		#					   Column('director_id', Integer)
+		#					  )
 
 		movie_actor = Table('movie_actor', metadata,
 							Column('movie_id', Integer),
 							Column('actor_id', Integer)
 						   )
 
-		movie_format = Table('movie_format', metadata,
-							 Column('movie_id', Integer),
-							 Column('format_id', Integer)
-							)
+		#movie_format = Table('movie_format', metadata,
+		#					 Column('movie_id', Integer),
+		#					 Column('format_id', Integer)
+		#					)
 
-		movie_genre = Table('movie_genre', metadata,
-							Column('movie_id', Integer),
-							Column('genre_id', Integer)
-						   )
+		#movie_genre = Table('movie_genre', metadata,
+		#					Column('movie_id', Integer),
+		#					Column('genre_id', Integer)
+		#				   )
 
 		metadata.create_all(engine)
+		print "database file created"
+		conn = engine.connect()
+		print "connection established"
+		ins = movie.insert()
+		print "movie insert defined"
+		conn.execute(ins, [
+			{'title': 'Fight Club', 'year': 1999},
+			{'title': 'The Matrix', 'year': 1999}
+			])
+		print "records added to movie table"
+		ins = actor.insert()
+		print "actor insert defined"
+		conn.execute(ins, [
+			{'first_name': 'Brad', 'last_name': 'Pitt', 'fullname': 'Brad Pitt'},
+			{'first_name': 'Edward', 'last_name': 'Norton', 'fullname': 'Edward Norton'},
+			{'first_name': 'Keanu', 'last_name': 'Reeves', 'fullname': 'Keanu Reeves'},
+			{'first_name': 'Laurence', 'last_name': 'Fishburne', 'fullname': 'Laurence Fishburne'}
+			])
+		print "records added to actor table"
+
+		#ins = movie_actor.insert()
+		#print "movie_actor insert defined"
+		#sel_mov = select([movie])
+		#print "movie_actor movie select defined"
+		#sel_act = select([actor])
+		#print "movie_actor actor select defined"
+		#result_mov = conn.execute(sel_mov)
+		#print "result_mov query executed"
+		#result_act = conn.execute(sel_act)
+		#print "result_act query executed"
+		#row_mov = result_mov.fetchone()
+		#print "first movie row"
+		#row_act = result_act.fetchone()
+		#print "first actor row"
+		#conn.execute(ins, [
+	#		{'movie_id': row_mov[0], 'actor_id': row_act[0]}
+	#		])
+	#	print "records added to movie_actor"
+	#	row_act = result_act.fetchone()
+	#	print "next actor row"
+	#	conn.execute(ins, [
+	#		{'movie_id': row_mov[0], 'actor_id': row_act[0]}
+	#		])
+	#	print "records added to movie_actor"
+	#	row_mov = result_mov.fetchone()
+	#	print "next movie row"
+	#	row_act = result_act.fetchone()
+	#	print "next actor row"
+	#	conn.execute(ins, [
+	#		{'movie_id': row_mov[0], 'actor_id': row_act[0]}
+	#		])
+	#	print "records added to movie_actor"
+	#	row_act = result_act.fetchone()
+	#	print "next actor row"
+	#	conn.execute(ins, [
+	#		{'movie_id': row_mov[0], 'actor_id': row_act[0]}
+	#		])
+	#	print "records added to movie_actor"
+
+		sel = select([movie])
+		print "movie query defined"
+		result = conn.execute(sel)
+		print "movie query executed"
+		for row in result:
+	
+			print row
+
+		sel = select([actor])
+		print "actor query defined"
+		result = conn.execute(sel)
+		print "actor query executed"
+		for row in result:
+			print row
+
+	#	sel = select([movie_actor])
+	#	print "movie_actor query defined"
+	#	result = conn.execute(sel)
+	#	print "movie_actor query executed"
+	#	for row in result:
+	#		print row
 
 	# The list_formatter() method takes an unformatted 2D list and returns a formatted 2D list
 	# with the first letter of every word capitolized. Unformatted lists are for searching while
@@ -140,5 +216,5 @@ class Database(object):
 		pass
 
 #-----------------------------------------------------------------------------------------------------------
-#movies = Database()
-#movies.create_db()
+movies = Database()
+movies.create_db()
