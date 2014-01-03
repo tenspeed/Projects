@@ -3,7 +3,6 @@ from bmdb import bmdb
 
 app = Flask(__name__)
 moviedb = bmdb.Database()
-moviedb.create_db()
 
 @app.route('/')
 def index():
@@ -13,7 +12,6 @@ def index():
 def search():
 	if request.method == 'POST':
 		form_data = request.form['query']
-		print form_data
 		return redirect(url_for('index'))
 	else:
 		return render_template('search.html')
@@ -23,8 +21,7 @@ def add():
 	if request.method == 'POST':
 		form_data = request.form
 		moviedb.add_new(form_data)
-		print form_data
-		return redirect(url_for('index'))
+		return redirect(url_for('add'))
 	else:
 		return render_template('add.html')
 
