@@ -21,7 +21,7 @@ class Movie(Base):
 	__tablename__ = "movie"
 
 	movie_id = Column(Integer, primary_key=True)
-	title = Column(String(20), nullable=False)
+	title = Column(String(20), nullable=False, unique=True)
 	year = Column(Integer, nullable=False)
 	format_id = Column(String, nullable=False)
 	movie_actor = relationship("MovieActor", cascade="all, delete-orphan", backref="movie")
@@ -34,7 +34,7 @@ class Movie(Base):
 		self.format_id = format_id
 
 	def __repr__(self):
-		return "<Movie('%s', '%s', '%s')>" % (self.title, self.year, self.format_id)
+		return "%s, %s" % (self.title, self.year)
 
 ############################################################################################################
 class Actor(Base):
@@ -43,15 +43,13 @@ class Actor(Base):
 	__tablename__ = "actor"
 
 	actor_id = Column(Integer, primary_key=True)
-	first_name = Column(String(20), nullable=False)
-	last_name = Column(String(20), nullable=False)
+	full_name = Column(String(30), nullable=False, unique=True)
 
-	def __init__(self, first_name, last_name):
-		self.first_name = first_name
-		self.last_name = last_name
+	def __init__(self, full_name):
+		self.full_name = full_name
 
 	def __repr__(self):
-		return "<Actor('%s', '%s')>" % (self.first_name, self.last_name)
+		return "%s" % (self.full_name)
 
 ############################################################################################################
 class Director(Base):
@@ -60,15 +58,13 @@ class Director(Base):
 	__tablename__ = "director"
 
 	director_id = Column(Integer, primary_key=True)
-	first_name = Column(String(20), nullable=False)
-	last_name = Column(String(20), nullable=False)
+	full_name = Column(String(30), nullable=False, unique=True)
 
-	def __init__(self, first_name, last_name):
-		self.first_name = first_name
-		self.last_name = last_name
+	def __init__(self, full_name):
+		self.full_name = full_name
 
 	def __repr__(self):
-		return"<Director('%s', '%s')>" % (self.first_name, self.last_name)
+		return "%s" % (self.full_name)
 
 ############################################################################################################
 class Genre(Base):
@@ -77,13 +73,13 @@ class Genre(Base):
 	__tablename__ = "genre"
 
 	genre_id = Column(Integer, primary_key=True)
-	genre_name = Column(String(60), nullable=False)
+	genre_name = Column(String(60), nullable=False, unique=True)
 
 	def __init__(self, genre_name):
 		self.genre_name = genre_name
 
 	def __repr__(self):
-		return"<Genre('%s')>" % (self.genre_name)
+		return "%s" % (self.genre_name)
 
 ############################################################################################################
 class MovieActor(Base):
@@ -98,7 +94,7 @@ class MovieActor(Base):
 	actor = relationship(Actor, lazy='joined')
 
 	def __repr__(self):
-		return"<MovieActor('%s', '%s')>" % (self.movie_id, self.actor_id)
+		return "%s, %s" % (self.movie_id, self.actor_id)
 
 ############################################################################################################
 class MovieDirector(Base):
@@ -113,7 +109,7 @@ class MovieDirector(Base):
 	director = relationship(Director, lazy='joined')
 
 	def __repr__(self):
-		return"<MovieDirector('%s', '%s')>" % (self.movie_id, self.director_id)
+		return "%s, %s" % (self.movie_id, self.director_id)
 
 ############################################################################################################
 class MovieGenre(Base):
@@ -128,7 +124,7 @@ class MovieGenre(Base):
 	genre = relationship(Genre, lazy='joined')
 
 	def __repr__(self):
-		return"<MovieGenre('%s', '%s')>" % (self.movie_id, self.genre_id)
+		return "%s, %s" % (self.movie_id, self.genre_id)
 
 ############################################################################################################
 # This is the Database class. The Database class handles any task relating to the movie database including,
@@ -143,9 +139,81 @@ class Database(object):
 		session = Session(engine)
 		self.session = session
 
+	# The list_formatter() method takes an unformatted 2D list and returns a formatted 2D list
+	# with the first letter of every word capitolized. Unformatted lists are for searching while
+	# formatted lists are for printing and displaying.
+	def list_formatter(self, list_2D):
+
+		formatted_list = [[[None] for i in range (6)] for i in range(len(list_2D))]
+		for i in range(len(list_2D)):
+			# Fill the temporary list with one set of movie data.
+			for j in range(6):
+				element = list_2D[i][j]
+				if element == "n/a":
+					element = element.upper()
+				else:
+					element = " ".join(word[0].upper() + word[1:].lower() for word in element.split())
+				formatted_list[i][j] = element
+		return formatted_list
+
+	# The list_builder() method takes a 1D list of movie data and an integer value as arguments
+	# and returns a 2D list of sorted movie data. The num_items argument tells list_builder() how
+	# many categories per movie when creating the 2D list.
+	def list_builder(self, list_1D, num_items):
+
+		# num_groups determines how many movies the list will hold.
+		num_groups = len(list_1D) / num_items
+
+		# Here we create a 2D list which will hold all of our movie data. A 2D list
+		# provides us with an intuitive organizational structure for searching and
+		# adding movies to the database.
+		list_2D = [[[None] for i in range(num_items)] for i in range(num_groups)]
+		for i in range(num_groups):
+			for j in range(num_items):
+				word = list_1D.pop(0)
+				list_2D[i][j] = word
+		# Sort the list by alphabetical order.
+		list_2D.sort()
+		return list_2D
+
 	# search method
 	def search(self, query):
 		pass
+
+	# view_collection method
+	def view_collection(self):
+		title_list = []
+		actor_list = []
+		director_list = []
+		genre_list = []
+		movie_list = []
+		actor_string = ""
+		director_string = ""
+		genre_string = ""
+
+		t = self.session.query(Movie).all()
+		for title in t:
+			title_list.append(title)
+
+		for i in range(len(title_list)):
+			a = self.session.query(Actor).filter(and_(Movie.title == title_list[i],
+												  Movie.movie_id == MovieActor.movie_id,
+												  Actor.actor_id == MovieActor.actor_id))
+
+			d = self.session.query(Director).filter(and_(Movie.title == title_list[i],
+													 Movie.movie_id == MovieDirector.movie_id,
+													 Director.director_id == MovieDirector.director_id))
+
+			g = self.session.query(Genre).filter(and_(Movie.title == title_list[i],
+												  Movie.movie_id == MovieGenre.movie_id,
+												  Genre.genre_id == MovieGenre.genre_id))
+			movie_list.append(title_list[i])
+			for actor in a:
+				actor_string += actor
+				actor_string += ", "
+
+
+		return movie_list
 
 	# add_new method
 	def add_new(self, new_movie):
@@ -156,60 +224,85 @@ class Database(object):
 				format += new_movie[formats[str(i)]]
 			except:
 				pass
-
-		movie = Movie(new_movie['title'].lower(), new_movie['year'], format)
+		try:
+			movie = Movie(new_movie['title'].lower(), new_movie['year'], format)
+			# add the new movie to the session
+			self.session.add(movie)
+			# commit the new movie to the database
+			self.session.commit()
+		except:
+			print "Duplicate Movie"
+			return
 
 		# parse the text in the actors entry
 		actors = new_movie['actors'].split(", ")
 		for i in range(len(actors)):
-			single_actor = actors[i].split(" ")
-			print "Actor #%d: %s %s" % (i+1, single_actor[0], single_actor[1]), "\n"
-			actor = Actor(single_actor[0].lower(), single_actor[1].lower())
-			movie.movie_actor.append(MovieActor(actor))
+			actor = Actor(actors[i].lower())
+			try:
+				movie.movie_actor.append(MovieActor(actor))
+				# add the new movie to the session
+				self.session.add(movie)
+				# commit the new movie to the database
+				self.session.commit()
+			except:
+				print "Duplicate Actor"
 
 		# parse the text in the directors entry
 		directors = new_movie['director'].split(", ")
 		for i in range(len(directors)):
-			single_director = directors[i].split(" ")
-			print "Director #%d: %s %s" % (i+1, single_director[0], single_director[1]), "\n"
-			director = Director(single_director[0].lower(), single_director[1].lower())
-			movie.movie_director.append(MovieDirector(director))
+			director = Director(directors[i].lower())
+			try:
+				movie.movie_director.append(MovieDirector(director))
+				# add the new movie to the session
+				self.session.add(movie)
+				# commit the new movie to the database
+				self.session.commit()
+			except:
+				print "Duplicate Director"
 
 		# parse the text in the genre entry
-		single_genre = new_movie['genre'].split(", ")
-		for i in range(len(single_genre)):
-			print "Genre: %s" % (single_genre[i]), "\n"
-			genre = Genre(single_genre[i].lower())
-			movie.movie_genre.append(MovieGenre(genre))
+		genres = new_movie['genre'].split(", ")
+		for i in range(len(genres)):
+			genre = Genre(genres[i].lower())
+			try:
+				movie.movie_genre.append(MovieGenre(genre))
+				# add the new movie to the session
+				self.session.add(movie)
+				# commit the new movie to the database
+				self.session.commit()
+			except:
+				print "Duplicate Genre"
 
 		# add the new movie to the session
-		self.session.add(movie)
+		#self.session.add(movie)
 		# commit the new movie to the database
-		self.session.commit()
+		#self.session.commit()
 
-		q = self.session.query(Movie).filter(and_(Movie.title == new_movie['title'].lower()))
+		m = self.session.query(Movie).filter(and_(Movie.title == new_movie['title'].lower()))
 
-		for record in q:
-			print record, "\n"
-
-		q = self.session.query(Actor).filter(and_(Movie.title == new_movie['title'].lower(),
+		a = self.session.query(Actor).filter(and_(Movie.title == new_movie['title'].lower(),
 												  Movie.movie_id == MovieActor.movie_id,
 												  Actor.actor_id == MovieActor.actor_id))
-		for record in q:
-			print record, "\n"
 
-		q = self.session.query(Director).filter(and_(Movie.title == new_movie['title'].lower(),
+		d = self.session.query(Director).filter(and_(Movie.title == new_movie['title'].lower(),
 													 Movie.movie_id == MovieDirector.movie_id,
 													 Director.director_id == MovieDirector.director_id))
-		for record in q:
-			print record, "\n"
 
-		q = self.session.query(Genre).filter(and_(Movie.title == new_movie['title'].lower(),
+		g = self.session.query(Genre).filter(and_(Movie.title == new_movie['title'].lower(),
 												  Movie.movie_id == MovieGenre.movie_id,
 												  Genre.genre_id == MovieGenre.genre_id))
-		for record in q:
+
+		for record in m:
 			print record, "\n"
 
+		for record in a:
+			print record, "\n"
+		
+		for record in d:
+			print record, "\n"
+
+		for record in g:
+			print record, "\n"
 
 ############################################################################################################
 #Testing Section
