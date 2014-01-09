@@ -34,7 +34,7 @@ class Movie(Base):
 		self.format_id = format_id
 
 	def __repr__(self):
-		return "%s, %s" % (self.title, self.year)
+		return "%s" % (self.title)
 
 ############################################################################################################
 class Actor(Base):
@@ -183,6 +183,7 @@ class Database(object):
 	# view_collection method
 	def view_collection(self):
 		title_list = []
+		year_list = []
 		actor_list = []
 		director_list = []
 		genre_list = []
@@ -192,28 +193,55 @@ class Database(object):
 		genre_string = ""
 
 		t = self.session.query(Movie).all()
-		for title in t:
-			title_list.append(title)
+		print "title list: ", t
 
-		for i in range(len(title_list)):
-			a = self.session.query(Actor).filter(and_(Movie.title == title_list[i],
+		for i in range(len(t)):
+			a = self.session.query(Actor).filter(and_(Movie.title == t[i],
 												  Movie.movie_id == MovieActor.movie_id,
 												  Actor.actor_id == MovieActor.actor_id))
+		print "actor list: ", a
+		#	d = self.session.query(Director).filter(and_(Movie.title == title_list[i],
+#													 Movie.movie_id == MovieDirector.movie_id,
+#													 Director.director_id == MovieDirector.director_id))
+#
+#			g = self.session.query(Genre).filter(and_(Movie.title == title_list[i],
+#												  Movie.movie_id == MovieGenre.movie_id,
+#												  Genre.genre_id == MovieGenre.genre_id))
+#
+#			# movie_list = ['title', 'genre', 'year', 'director', 'actors']
+#			movie_list.append(title_list[i])
+#	
+#			for actor in a:
+#				actor_list.append(actor)
+#			for director in d:
+#				director_list.append(director)
+#			for genre in g:
+#				genre_list.append(genre)
 
-			d = self.session.query(Director).filter(and_(Movie.title == title_list[i],
-													 Movie.movie_id == MovieDirector.movie_id,
-													 Director.director_id == MovieDirector.director_id))
+#			for j in range(len(genre_list)):
+#				genre_string += genre_list[j]
+#				genre_string += ", "
+#			genre_string = genre_string[:-1]
+#			genre_string = genre_string[:-1]
+#			movie_list.append(genre_string)
 
-			g = self.session.query(Genre).filter(and_(Movie.title == title_list[i],
-												  Movie.movie_id == MovieGenre.movie_id,
-												  Genre.genre_id == MovieGenre.genre_id))
-			movie_list.append(title_list[i])
-			for actor in a:
-				actor_string += actor
-				actor_string += ", "
+#			movie_list.append(year_list[i])
+#
+#			for j in range(len(director_list)):
+#				director_string += director_list[j]
+#				director_string += ", "
+#			director_string = director_string[:-1]
+#			director_string = director_string[:-1]
+#			movie_list.append(director_string)
 
+#			for j in range(len(actor_list)):
+#				actor_string += actor_list[j]
+#				actor_string += ", "
+#			actor_string = actor_string[:-1]
+#			actor_string = actor_string[:-1]
+#			movie_list.append(actor_string)
 
-		return movie_list
+#		return movie_list
 
 	# add_new method
 	def add_new(self, new_movie):
@@ -222,8 +250,12 @@ class Database(object):
 		for i in range(1,5):
 			try:
 				format += new_movie[formats[str(i)]]
+				format += ", "
 			except:
 				pass
+
+		format = format[:-1]
+		format = format[:-1]
 		try:
 			movie = Movie(new_movie['title'].lower(), new_movie['year'], format)
 			# add the new movie to the session

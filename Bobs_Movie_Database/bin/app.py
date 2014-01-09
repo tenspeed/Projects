@@ -27,10 +27,11 @@ def add():
 
 @app.route('/collection/')
 def results():
-	collection = moviedb.view_collection()
-	print len(collection)
-	print collection
-	return render_template('results.html', collection=collection)
+	moviedb.view_collection()
+	#collection = moviedb.view_collection()
+	#print (len(collection)/5)
+	#print collection
+	return render_template('results.html')#, collection=collection)
 
 @app.route('/delete/')
 def delete():
