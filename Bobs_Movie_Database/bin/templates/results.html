@@ -6,4 +6,13 @@
 {% block content %}
 	<h1>Results</h1>
 	<a href="/" class="important">Return to Main Menu</a>
+	</br></br>
+	{% for i in range(num_items) %}
+		<strong>{{collection[i][0]}}</strong></br>
+		{{collection[i][1]}}</br>
+		{{collection[i][2]}}</br>
+		{{collection[i][3]}}</br>
+		{{collection[i][4]}}</br>
+		{{collection[i][5]}}</br></br>
+	{% endfor %}
 {% endblock %}
