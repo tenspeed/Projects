@@ -1,4 +1,4 @@
-# bmdb.py version 3.0
+# bmdb.py version 3.1
 # Written by Todd Smith
 # 10/15/2013
 # Licence:
@@ -7,7 +7,7 @@
 #-----------------------------------------------------------------------------------------------------------
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, create_engine, and_, or_
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import backref, mapper, relationship, Session
+from sqlalchemy.orm import backref, relationship, Session
 
 Base = declarative_base()
 
@@ -23,8 +23,7 @@ class Movie(Base):
         title = Column(String(20), nullable=False, unique=True)
         year = Column(Integer, nullable=False)
         format = Column(String, nullable=False)
-        movie_actor = relationship("Actor", secondary="movieactor", backref="movie")
-        #movie_actor = relationship("MovieActor", cascade="all, delete-orphan", backref="movie")
+        movie_actor = relationship("MovieActor", cascade="all, delete-orphan", backref="movie")
         movie_director = relationship("MovieDirector", cascade="all, delete-orphan", backref="movie")
         movie_genre = relationship("MovieGenre", cascade="all, delete-orphan", backref="movie")
 
@@ -34,7 +33,7 @@ class Movie(Base):
                 self.format = format
 
         def __repr__(self):
-                return "%s %s" % (self.movie_id, self.title)
+                return "<Movie(movie_id='%d', title='%s', year='%d', format='%s')>" % (self.movie_id, self.title, self.year, self.format)
 
 ############################################################################################################
 class Actor(Base):
@@ -49,7 +48,7 @@ class Actor(Base):
                 self.full_name = full_name
 
         def __repr__(self):
-                return "%s %s" % (self.actor_id, self.full_name)
+                return "<Actor(actor_id='%d', full_name='%s')>" % (self.actor_id, self.full_name)
 
 ############################################################################################################
 class Director(Base):
@@ -64,7 +63,7 @@ class Director(Base):
                 self.full_name = full_name
 
         def __repr__(self):
-                return "%s %s" % (self.director_id, self.full_name)
+                return "<Director(director_id='%d', full_name='%s')>" % (self.director_id, self.full_name)
 
 ############################################################################################################
 class Genre(Base):
@@ -79,25 +78,22 @@ class Genre(Base):
                 self.genre_name = genre_name
 
         def __repr__(self):
-                return "%s %s" % (self.genre_id, self.genre_name)
+                return "<Genre(genre_id='%d', genre_name='%s')>" % (self.genre_id, self.genre_name)
 
 ############################################################################################################
-#class MovieActor(Base):
-#        """MovieActor Association Class"""
-#
-#        __tablename__ = "movieactor"
-#        movie_id = Column(Integer, ForeignKey('movie.movie_id'), primary_key=True)
-#        actor_id = Column(Integer, ForeignKey('actor.actor_id'), primary_key=True)
-#
-#        def __init__(self, actor):
-#                self.actor = actor
-#        actor = relationship(Actor, lazy='joined')
-#
-#        def __repr__(self):
-#                return "%s, %s" % (self.movie_id, self.actor_id)
-MovieActor = Table('movieactor', Base.metadata,
-        Column('movie_id', Integer, ForeignKey('movie.movie_id')),
-        Column('actor_id', Integer, ForeignKey('actor.actor_id')))
+class MovieActor(Base):
+        """MovieActor Association Class"""
+
+        __tablename__ = "movieactor"
+        movie_id = Column(Integer, ForeignKey('movie.movie_id'), primary_key=True)
+        actor_id = Column(Integer, ForeignKey('actor.actor_id'), primary_key=True)
+
+        def __init__(self, actor):
+                self.actor = actor
+        actor = relationship(Actor, lazy='joined')
+
+        def __repr__(self):
+                return "<MovieActor(movie_id='%d', actor_id='%d')>" % (self.movie_id, self.actor_id)
 
 ############################################################################################################
 class MovieDirector(Base):
@@ -112,7 +108,7 @@ class MovieDirector(Base):
         director = relationship(Director, lazy='joined')
 
         def __repr__(self):
-                return "%s, %s" % (self.movie_id, self.director_id)
+                return "<MovieDirector(movie_id='%d', director_id='%d')>" % (self.movie_id, self.director_id)
 
 ############################################################################################################
 class MovieGenre(Base):
@@ -127,7 +123,7 @@ class MovieGenre(Base):
         genre = relationship(Genre, lazy='joined')
 
         def __repr__(self):
-                return "%s, %s" % (self.movie_id, self.genre_id)
+                return "<MovieGenre(movie_id='%d', genre_id='%d')>" % (self.movie_id, self.genre_id)
 
 ############################################################################################################
 # This is the Database class. The Database class handles any task relating to the movie database including,
@@ -166,48 +162,58 @@ class Database(object):
 
         # view_collection method
         def view_collection(self):
+                # create a temporary list to hold movie info for viewing
                 movie_list = []
+                #create temporary strings to put actor, director, and genre info into for viewin
                 actor_string = ""
                 director_string = ""
                 genre_string = ""
 
+                # query the database for all movies in the Movie table
                 t = self.session.query(Movie).all()
 
                 for i in range(len(t)):
+                        # find all the actors which star in the current movie
                         a = self.session.query(Actor).filter(and_(Movie.title == t[i].title,
                                                                   Movie.movie_id == MovieActor.movie_id,
                                                                   Actor.actor_id == MovieActor.actor_id))
+                        # construct one long string of all the actors separated by commas
                         for record in a:
                                 actor_string += record.full_name
                                 actor_string += ", "
 
+                        # remove the last comma/space at the end of the string
                         actor_string = actor_string[:-1]
                         actor_string = actor_string[:-1]
 
+                        # find all the directors associated with the current movie
                         d = self.session.query(Director).filter(and_(Movie.title == t[i].title,
                                                                      Movie.movie_id == MovieDirector.movie_id,
                                                                      Director.director_id == MovieDirector.director_id))
-
+                        # construct one long string of all the directors separated by commas
                         for record in d:
                                 director_string += record.full_name
                                 director_string += ", "
 
+                        # remove the last comma/space at the end of the string
                         director_string = director_string[:-1]
                         director_string = director_string[:-1]
 
+                        # find all the genres associated with the current movie
                         g = self.session.query(Genre).filter(and_(Movie.title == t[i].title,
                                                                   Movie.movie_id == MovieGenre.movie_id,
                                                                   Genre.genre_id == MovieGenre.genre_id))
-
+                        # construct one long string of all the genres separated by commas
                         for record in g:
                                 genre_string += record.genre_name
                                 genre_string += ", "
 
+                        # remove the last comma/space at the end of the string
                         genre_string = genre_string[:-1]
                         genre_string = genre_string[:-1]
-
 
                         # movie_list = ['title', 'genre', 'year', 'director', 'actors', 'format']
+                        # append all the relevent movie, actor, director, and genre info to the movie_list
                         movie_list.append(t[i].title)
                         movie_list.append(genre_string)
                         movie_list.append(t[i].year)
@@ -215,10 +221,12 @@ class Database(object):
                         movie_list.append(actor_string)
                         movie_list.append(t[i].format)
 
+                        # clear the temporary strings
                         actor_string = ""
                         director_string = ""
                         genre_string = ""
         
+                # format the 1D list into a 2D list
                 movie_list = self.list_builder(movie_list, 6)
                 return movie_list
 
@@ -226,105 +234,85 @@ class Database(object):
         # takes a dictionary of strings containing all the info for a new movie: "title, actors, director, genre" etc
         # and formats the strings, then adds them to the proper tables in the database
         def add_new(self, new_movie):
+                print new_movie
                 #find out what formats exist
                 format = ""
                 for i in range(1,5):
                         try:
+                                # construct one long string of all the formats that turn up, separated by commas
                                 format += new_movie[formats[str(i)]]
                                 format += ", "
                         except:
                                 pass
 
+                # remove the last comma/space from the format string
                 format = format[:-1]
                 format = format[:-1]
                 # capitalize the first letter of each word in the movie title
                 title = " ".join(word[0].upper() + word[1:].lower() for word in new_movie['title'].split())
-                try:
-                        movie = Movie(title, new_movie['year'], format)
-                        # add the new movie to the session
-                        self.session.add(movie)
-                        # commit the new movie to the database
-                        self.session.commit()
-                except:
-                        print "Duplicate Movie"
-                        self.session.rollback()
-                        return
-
-                # parse the text in the actors entry
+                # query the database to see if the movie already exists in the Movie table
+                movie = self.session.query(Movie).filter(Movie.title == title).first()
+                # if the movie already exists, leave add_new() without updating the database
+                if movie:
+                    print "Duplicate Movie"
+                    return
+                # if the movie isn't already in the database, add it to the Movie table
+                movie = Movie(title, new_movie['year'], format)
+               
+                # parse the text in the actors dictionary
                 # take the incoming string of all actors in the movie and split it into a list of individual actors
                 actors = new_movie['actors'].split(", ")        
                 for i in range(len(actors)):
                         # for each actor in the list, capitalize the first letter in their first and last names
                         actors[i] = " ".join(word[0].upper() + word[1:].lower() for word in actors[i].split())
-                        # add each formatted actor name to the Actor table
-                        actor = Actor(actors[i])
-                        try:
-                                # add the appropriate association between the movie and the actors to the MovieActor table
-                                movie.movie_actor.append(actor)
-                                #movie.movie_actor.append(MovieActor(actor))
-                                # add the new movie to the session
-                                self.session.add(movie)
-                                # commit the new movie to the database
-                                self.session.commit()
-                        except:
-                                print "Duplicate Actor"
-                                self.session.rollback()
-                                temp_assoc = MovieActor(movie_id = movie.movie_id, actor_id = actor.actor_id)
-                                self.session.add(temp_assoc)
-                                self.session.commit()
-
-                # parse the text in the directors entry
+                        # query the database to see if the current actor already exists in the Actor table
+                        actor = self.session.query(Actor).filter(Actor.full_name == actors[i]).first()
+                        # if the actor already exists, create the movie/actor relation in the MovieActor table
+                        if actor:
+                            movie.movie_actor.append(MovieActor(actor))
+                        # if the actor doesn't already exist, add it to the Actor table and create the movie/actor relation
+                        # in the MovieActor table
+                        else:
+                            actor = Actor(actors[i])
+                            movie.movie_actor.append(MovieActor(actor))
+                                
+                # parse the text in the directors dictionary
+                # take the incoming string of all the directors associated with the movie and split it into a list
+                # of individual directors
                 directors = new_movie['director'].split(", ")
                 for i in range(len(directors)):
+                        # for each director in the list, capitalize the first letter in their first and last names
                         directors[i] = " ".join(word[0].upper() + word[1:].lower() for word in directors[i].split())
-                        director = Director(directors[i])
-                        try:
-                                movie.movie_director.append(MovieDirector(director))
-                                # add the new movie to the session
-                                self.session.add(movie)
-                                # commit the new movie to the database
-                                self.session.commit()
-                        except:
-                                print "Duplicate Director"
-                                self.session.rollback()
+                        # query the database to see if the current director already exists in the Director table
+                        director = self.session.query(Director).filter(Director.full_name == directors[i]).first()
+                        # if the director already exists, create the movie/director relation in the MovieDirector table
+                        if director:
+                            movie.movie_director.append(MovieDirector(director))
+                        # if the director doesn't already exist, add it to the Director table and create the movie/director
+                        # relation in the MovieDirector table
+                        else:
+                            director = Director(directors[i])
+                            movie.movie_director.append(MovieDirector(director))
 
-                # parse the text in the genre entry
+                # parse the text in the genre dictionary
                 genres = new_movie['genre'].split(", ")
                 for i in range(len(genres)):
+                        # for each genre in the list, capitalize the first letter
                         genres[i] = " ".join(word[0].upper() + word[1:].lower() for word in genres[i].split())
-                        genre = Genre(genres[i])
-                        try:
-                                movie.movie_genre.append(MovieGenre(genre))
-                                # add the new movie to the session
-                                self.session.add(movie)
-                                # commit the new movie to the database
-                                self.session.commit()
-                        except:
-                                print "Duplicate Genre"
-                                self.session.rollback()
+                        # query the database to see if the current genre already exists in the Genre table
+                        genre = self.session.query(Genre).filter(Genre.genre_name == genres[i]).first()
+                        # if the genre already exists, create the movie/genre relation in the MovieGenre table
+                        if genre:
+                            movie.movie_genre.append(MovieGenre(genre))
+                        # if the genre doesn't already exist, add it to the Genre table and create the movie/genre relation
+                        # in the MovieGenre table
+                        else:
+                            genre = Genre(genres[i])
+                            movie.movie_genre.append(MovieGenre(genre))
 
-        		m = self.session.query(Movie).all()
-        		a = self.session.query(Actor).all()
-        		d = self.session.query(Director).all()
-        		g = self.session.query(Genre).all()
-        		ma = self.session.query(MovieActor).all()
-        		md = self.session.query(MovieDirector).all()
-        		mg = self.session.query(MovieGenre).all()
-
-        		for record in m:
-        			print "Movie table: ", record
-        		for record in a:
-        			print "Actor table: ", record
-        		for record in d:
-        			print "Director table: ", record
-        		for record in g:
-        			print "Genre table: ", record
-        		for record in ma:
-        			print "MovieActor table: ", record
-        		for record in md:
-        			print "MovieDirector table: ", record
-        		for record in mg:
-        			print "MovieGenre table: ", record
+                        # add and commit the new movie data
+                        self.session.add(movie)
+                        self.session.commit()
 
 ############################################################################################################
 #Testing Section
@@ -334,14 +322,14 @@ Base.metadata.create_all(engine)
 session = Session(engine)
 
 #add some actors to the Actor table
-brad_pitt = Actor('brad', 'pitt')
-edward_norton = Actor('edward', 'norton')
+brad_pitt = Actor('brad pitt')
+edward_norton = Actor('edward norton')
 
 #add a movie to the Movie table
 fight_club = Movie('fight club', 1999, '2')
 
 #add a director to the Director table
-david_fincher = Director('david', 'fincher')
+david_fincher = Director('david fincher')
 
 #add a genre to the Genre table
 drama = Genre('Drama')
@@ -362,9 +350,9 @@ session.commit()
 
 world_war_z = Movie('world war z', 2013, '2')
 
-mireille_enos = Actor('mireille', 'enos')
+mireille_enos = Actor('mireille enos')
 
-marc_forster = Director('marc', 'forster')
+marc_forster = Director('marc forster')
 
 action = Genre('Action')
 adventure = Genre('Adventure')
@@ -390,7 +378,7 @@ for movie in q:
         print movie
 print "\n\n"
 
-q = session.query(Movie, Director).filter(and_(Actor.first_name == 'mireille',
+q = session.query(Movie, Director).filter(and_(Actor.full_name == 'mireille enos',
                                                                          Actor.actor_id == MovieActor.actor_id,
                                                                          Movie.movie_id == MovieActor.movie_id,
                                                                          Director.director_id == MovieDirector.director_id,
@@ -409,9 +397,40 @@ print "number of movie/actor pairs: ", session.query(MovieActor).count()
 print "number of movie/genre pairs: ", session.query(MovieGenre).count()
 print "\n\n"
 
-print session.query(MovieActor).all(), "\n\n"
-print session.query(MovieDirector).all(), "\n\n"
-print session.query(MovieGenre).all(), "\n\n"
+q = session.query(MovieActor).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(MovieDirector).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(MovieGenre).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Movie).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Actor).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Director).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Genre).all()
+for record in q:
+    print record
+print"\n\n"
 
 
 #delete World War Z from the database. What happens to the child tables?
@@ -428,8 +447,39 @@ print "number of movie/actor pairs: ", session.query(MovieActor).count()
 print "number of movie/genre pairs: ", session.query(MovieGenre).count()
 print "\n\n"
 
-print session.query(MovieActor).all(), "\n\n"
-print session.query(MovieDirector).all(), "\n\n"
-print session.query(MovieGenre).all(), "\n\n"
+q = session.query(MovieActor).all()
+for record in q:
+    print record
+print "\n\n"
 
+q = session.query(MovieDirector).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(MovieGenre).all()
+for record in q:
+    print record
+print "\n\n"
+
+
+q = session.query(Movie).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Actor).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Director).all()
+for record in q:
+    print record
+print "\n\n"
+
+q = session.query(Genre).all()
+for record in q:
+    print record
+print"\n\n"
 """

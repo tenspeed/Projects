@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, url_for, redirect
-from bmdb import bmdb
+from bmdb import bmdb_orm
 
 app = Flask(__name__)
-moviedb = bmdb.Database()
+moviedb = bmdb_orm.Database()
 
 @app.route('/')
 def index():
