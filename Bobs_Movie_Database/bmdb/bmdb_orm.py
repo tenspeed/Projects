@@ -126,9 +126,8 @@ class MovieGenre(Base):
                 return "<MovieGenre(movie_id='%d', genre_id='%d')>" % (self.movie_id, self.genre_id)
 
 ############################################################################################################
-# This is the Database class. The Database class handles any task relating to the movie database including,
-# opening the file where the movie information is stored, searching for movies based on search criteria,
-# and adding new movies to the database.
+# This is the Database class. The Database class queries the database, adds new movie data to the database,
+# deletes records from the database, and returns/formats movie data for display to the user.
 class Database(object):
 
         # A connection to the movie database is established upon instantiation.
@@ -158,7 +157,116 @@ class Database(object):
 
         # search method
         def search(self, query):
-                pass
+                movie_list = []
+                title_string = ""
+                actor_string = ""
+                director_string = ""
+                genre_string = ""
+
+                query = " ".join(word[0].upper() + word[1:].lower() for word in query.split())
+
+                m = self.session.query(Movie).filter(Movie.title.in_([query])).all()
+
+                if m:
+                    actors = self.session.query(Actor).filter(and_(Movie.title == m[0].title,
+                                                              Movie.movie_id == MovieActor.movie_id,
+                                                              Actor.actor_id == MovieActor.actor_id))
+                    for record in actors:
+                        actor_string += record.full_name
+                        actor_string += "; "
+                    actor_string = actor_string[:-1]
+                    actor_string = actor_string[:-1]
+
+                    directors = self.session.query(Director).filter(and_(Movie.title == m[0].title,
+                                                                 Movie.movie_id == MovieDirector.movie_id,
+                                                                 Director.director_id == MovieDirector.director_id))
+
+                    for record in directors:
+                        director_string += record.full_name
+                        director_string += "; "
+                    director_string = director_string[:-1]
+                    director_string = director_string[:-1]
+
+                    genres = self.session.query(Genre).filter(and_(Movie.title == m[0].title,
+                                                              Movie.movie_id == MovieGenre.movie_id,
+                                                              Genre.genre_id == MovieGenre.genre_id))
+
+                    for record in genres:
+                        genre_string += record.genre_name
+                        genre_string += "; "
+                    genre_string = genre_string[:-1]
+                    genre_string = genre_string[:-1]
+
+                    movie_list.append(m[0].title)
+                    movie_list.append(genre_string)
+                    movie_list.append(m[0].year)
+                    movie_list.append(director_string)
+                    movie_list.append(actor_string)
+                    movie_list.append(m[0].format)
+
+                    title_string = ""
+                    actor_string = ""
+                    director_string = ""
+                    genre_string = ""
+
+                a = self.session.query(Actor).filter(Actor.full_name.in_([query])).all()
+
+                if a:
+                    movies = self.session.query(Movie).filter(and_(Actor.full_name == a[0].full_name,
+                                                              Actor.actor_id == MovieActor.actor_id,
+                                                              Movie.movie_id == MovieActor.movie_id)).all()
+                    if movies:
+                        for i in range(len(movies)):
+                            actors = self.session.query(Actor).filter(and_(Movie.title == movies[i].title,
+                                                                  Movie.movie_id == MovieActor.movie_id,
+                                                                  Actor.actor_id == MovieActor.actor_id))
+                        # construct one long string of all the actors separated by commas
+                            for record in actors:
+                                actor_string += record.full_name
+                                actor_string += ", "
+
+                            # remove the last comma/space at the end of the string
+                            actor_string = actor_string[:-1]
+                            actor_string = actor_string[:-1]
+
+                            directors = self.session.query(Director).filter(and_(Movie.title == movies[i].title,
+                                                                     Movie.movie_id == MovieDirector.movie_id,
+                                                                     Director.director_id == MovieDirector.director_id))
+                            for record in directors:
+                                director_string += record.full_name
+                                director_string += ", "
+
+                            # remove the last comma/space at the end of the string
+                            director_string = director_string[:-1]
+                            director_string = director_string[:-1]
+
+                            genres = self.session.query(Genre).filter(and_(Movie.title == movies[i].title,
+                                                                  Movie.movie_id == MovieGenre.movie_id,
+                                                                  Genre.genre_id == MovieGenre.genre_id))
+
+                            for record in genres:
+                                genre_string += record.genre_name
+                                genre_string += ", "
+
+                            # remove the last comma/space at the end of the string
+                            genre_string = genre_string[:-1]
+                            genre_string = genre_string[:-1]
+
+                            movie_list.append(movies[i].title)
+                            movie_list.append(genre_string)
+                            movie_list.append(movies[i].year)
+                            movie_list.append(director_string)
+                            movie_list.append(actor_string)
+                            movie_list.append(movies[i].format)
+
+                            title_string = ""
+                            actor_string = ""
+                            director_string = ""
+                            genre_string = ""
+
+
+                movie_list = self.list_builder(movie_list, 6)
+                return movie_list
 
         # view_collection method
         def view_collection(self):
@@ -314,6 +422,8 @@ class Database(object):
                         self.session.add(movie)
                         self.session.commit()
 
+        def delete_movie(self):
+            pass
 ############################################################################################################
 #Testing Section
 """

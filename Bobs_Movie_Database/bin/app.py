@@ -12,7 +12,9 @@ def index():
 def search():
 	if request.method == 'POST':
 		form_data = request.form['query']
-		return redirect(url_for('index'))
+		search_results = moviedb.search(form_data)
+		num_items = len(search_results)
+		return render_template('results.html', collection=search_results, num_items=num_items)
 	else:
 		return render_template('search.html')
 
