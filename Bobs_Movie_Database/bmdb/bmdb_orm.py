@@ -157,115 +157,80 @@ class Database(object):
 
         # search method
         def search(self, query):
+                print "searching for: ", query
                 movie_list = []
-                title_string = ""
                 actor_string = ""
                 director_string = ""
                 genre_string = ""
 
                 query = " ".join(word[0].upper() + word[1:].lower() for word in query.split())
 
-                m = self.session.query(Movie).filter(Movie.title.in_([query])).all()
+                match = self.session.query(Movie).filter(or_(Movie.title.in_([query]),
+                                                                                     Actor.full_name.in_([query]),
+                                                                                     Director.full_name.in_([query]),
+                                                                                     Genre.genre_name.in_([query]),
+                                                                                     Movie.year.in_([query]),
+                                                                                     Movie.format.in_([query]))).all()
 
-                if m:
-                    actors = self.session.query(Actor).filter(and_(Movie.title == m[0].title,
-                                                              Movie.movie_id == MovieActor.movie_id,
-                                                              Actor.actor_id == MovieActor.actor_id))
-                    for record in actors:
-                        actor_string += record.full_name
-                        actor_string += "; "
-                    actor_string = actor_string[:-1]
-                    actor_string = actor_string[:-1]
-
-                    directors = self.session.query(Director).filter(and_(Movie.title == m[0].title,
-                                                                 Movie.movie_id == MovieDirector.movie_id,
-                                                                 Director.director_id == MovieDirector.director_id))
-
-                    for record in directors:
-                        director_string += record.full_name
-                        director_string += "; "
-                    director_string = director_string[:-1]
-                    director_string = director_string[:-1]
-
-                    genres = self.session.query(Genre).filter(and_(Movie.title == m[0].title,
-                                                              Movie.movie_id == MovieGenre.movie_id,
-                                                              Genre.genre_id == MovieGenre.genre_id))
-
-                    for record in genres:
-                        genre_string += record.genre_name
-                        genre_string += "; "
-                    genre_string = genre_string[:-1]
-                    genre_string = genre_string[:-1]
-
-                    movie_list.append(m[0].title)
-                    movie_list.append(genre_string)
-                    movie_list.append(m[0].year)
-                    movie_list.append(director_string)
-                    movie_list.append(actor_string)
-                    movie_list.append(m[0].format)
-
-                    title_string = ""
-                    actor_string = ""
-                    director_string = ""
-                    genre_string = ""
-
-                a = self.session.query(Actor).filter(Actor.full_name.in_([query])).all()
-
-                if a:
-                    movies = self.session.query(Movie).filter(and_(Actor.full_name == a[0].full_name,
+                if match:
+                    print "match found"
+                    movies = self.session.query(Movie).filter(or_(and_(Actor.full_name == query,
                                                               Actor.actor_id == MovieActor.actor_id,
-                                                              Movie.movie_id == MovieActor.movie_id)).all()
-                    if movies:
-                        for i in range(len(movies)):
-                            actors = self.session.query(Actor).filter(and_(Movie.title == movies[i].title,
-                                                                  Movie.movie_id == MovieActor.movie_id,
-                                                                  Actor.actor_id == MovieActor.actor_id))
-                        # construct one long string of all the actors separated by commas
-                            for record in actors:
-                                actor_string += record.full_name
-                                actor_string += ", "
+                                                              Movie.movie_id == MovieActor.movie_id),
+                                                              and_(Director.full_name == query,
+                                                              Director.director_id == MovieDirector.director_id,
+                                                              Movie.movie_id == MovieDirector.movie_id),
+                                                              and_(Genre.genre_name == query,
+                                                              Genre.genre_id == MovieGenre.genre_id,
+                                                              Movie.movie_id == MovieGenre.movie_id),
+                                                              Movie.title == query,
+                                                              Movie.year == query,
+                                                              Movie.format == query))
+                    print "movies queried"
+                    for record in movies:
+                        actors = self.session.query(Actor).filter(and_(Actor.actor_id == MovieActor.actor_id,
+                                                                       record.movie_id == MovieActor.movie_id))
 
-                            # remove the last comma/space at the end of the string
-                            actor_string = actor_string[:-1]
-                            actor_string = actor_string[:-1]
+                        directors = self.session.query(Director).filter(and_(Director.director_id == MovieDirector.director_id,
+                                                                             record.movie_id == MovieDirector.movie_id))
 
-                            directors = self.session.query(Director).filter(and_(Movie.title == movies[i].title,
-                                                                     Movie.movie_id == MovieDirector.movie_id,
-                                                                     Director.director_id == MovieDirector.director_id))
-                            for record in directors:
-                                director_string += record.full_name
-                                director_string += ", "
+                        genres = self.session.query(Genre).filter(and_(Genre.genre_id == MovieGenre.genre_id,
+                                                                       record.movie_id == MovieGenre.movie_id))
 
-                            # remove the last comma/space at the end of the string
-                            director_string = director_string[:-1]
-                            director_string = director_string[:-1]
+                        for a in actors:
+                            actor_string += a.full_name
+                            actor_string += ", "
+                        actor_string = actor_string[:-1]
+                        actor_string = actor_string[:-1]
 
-                            genres = self.session.query(Genre).filter(and_(Movie.title == movies[i].title,
-                                                                  Movie.movie_id == MovieGenre.movie_id,
-                                                                  Genre.genre_id == MovieGenre.genre_id))
+                        for d in directors:
+                            director_string += d.full_name
+                            director_string += ", "
+                        director_string = director_string[:-1]
+                        director_string = director_string[:-1]
+ 
+                        for g in genres:
+                            genre_string += g.genre_name
+                            genre_string += ", "
+                        genre_string = genre_string[:-1]
+                        genre_string = genre_string[:-1]
 
-                            for record in genres:
-                                genre_string += record.genre_name
-                                genre_string += ", "
+                        movie_list.append(record.title)
+                        movie_list.append(genre_string)
+                        movie_list.append(record.year)
+                        movie_list.append(director_string)
+                        movie_list.append(actor_string)
+                        movie_list.append(record.format)
+                        print "building movie list"
+                        actor_string = ""
+                        director_string =""
+                        genre_string = ""
 
-                            # remove the last comma/space at the end of the string
-                            genre_string = genre_string[:-1]
-                            genre_string = genre_string[:-1]
-
-                            movie_list.append(movies[i].title)
-                            movie_list.append(genre_string)
-                            movie_list.append(movies[i].year)
-                            movie_list.append(director_string)
-                            movie_list.append(actor_string)
-                            movie_list.append(movies[i].format)
-
-                            title_string = ""
-                            actor_string = ""
-                            director_string = ""
-                            genre_string = ""
-
+                else:
+                    return None
 
                 movie_list = self.list_builder(movie_list, 6)
+                print "building 2D movie list"
                 return movie_list
 
         # view_collection method
@@ -279,6 +244,27 @@ class Database(object):
 
                 # query the database for all movies in the Movie table
                 t = self.session.query(Movie).all()
+                a = self.session.query(Actor).all()
+                d = self.session.query(Director).all()
+                g = self.session.query(Genre).all()
+                ma = self.session.query(MovieActor).all()
+                md = self.session.query(MovieDirector).all()
+                mg = self.session.query(MovieGenre).all()
+
+                for record in t:
+                    print record
+                for record in a:
+                    print record
+                for record in d:
+                    print record
+                for record in g:
+                    print record
+                for record in ma:
+                    print record
+                for record in md:
+                    print record
+                for record in mg:
+                    print record
 
                 for i in range(len(t)):
                         # find all the actors which star in the current movie
@@ -342,7 +328,6 @@ class Database(object):
         # takes a dictionary of strings containing all the info for a new movie: "title, actors, director, genre" etc
         # and formats the strings, then adds them to the proper tables in the database
         def add_new(self, new_movie):
-                print new_movie
                 #find out what formats exist
                 format = ""
                 for i in range(1,5):
