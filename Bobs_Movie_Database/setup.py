@@ -1,9 +1,19 @@
-from setuptools import setup
+try:
+	from setuptools import setup
+except ImportError
+	from distutils.core import setup
 
-setup(name='bmdb',
-	  version='2.0',
-	  description='bmdb is a program to keep track of your movie collection by creating a searchable database',
-	  url='http://www.github.com/tenspeed',
-	  author='Todd Smith',
-	  author_email='tsmith86@gmail.com',
-	  packages=['bmdb', 'bin'],)
+config = {
+	'description': "Bob's Movie Database",
+	'author': 'Todd Smith',
+	'url': 'https://github.com/tenspeed',
+	'download_url': 'N/A',
+	'author_email': 'tsmith86@gmail.com',
+	'version': '3.1'
+	'install_requires': ['nose', 'Flask', 'SQLAlchemy'],
+	'packages': ['NAME'],
+	'scripts': [],
+	'name': 'bmdb'
+}
+
+setup(**config)
