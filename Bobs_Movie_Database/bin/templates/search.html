@@ -6,7 +6,13 @@
 {% block content %}
 	<h1>Search</h1>
 	<form action="/search/" method="POST">
-		<input type="text", name='query'>
+		Title:<br/><input type="text" name="title">
+		<br/><br/>
+		Genre:<br/><input type="text" name="genre">
+		<br/><br/>
+		Director:<br/><input type="text" name="director">
+		<br/><br/>
+		Actors:<br/><input type="text" name="actors">
 		<br/><br/>
 		<input type="submit", value='Search'>
 	</form>

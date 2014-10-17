@@ -156,82 +156,35 @@ class Database(object):
                 return list_2D
 
         # search method
-        def search(self, query):
-                print "searching for: ", query
+        def search(self, query_dict):
                 movie_list = []
                 actor_string = ""
                 director_string = ""
                 genre_string = ""
-
-                query = " ".join(word[0].upper() + word[1:].lower() for word in query.split())
-
-                match = self.session.query(Movie).filter(or_(Movie.title.in_([query]),
-                                                                                     Actor.full_name.in_([query]),
-                                                                                     Director.full_name.in_([query]),
-                                                                                     Genre.genre_name.in_([query]),
-                                                                                     Movie.year.in_([query]),
-                                                                                     Movie.format.in_([query]))).all()
-
-                if match:
-                    print "match found"
-                    movies = self.session.query(Movie).filter(or_(and_(Actor.full_name == query,
-                                                              Actor.actor_id == MovieActor.actor_id,
-                                                              Movie.movie_id == MovieActor.movie_id),
-                                                              and_(Director.full_name == query,
-                                                              Director.director_id == MovieDirector.director_id,
-                                                              Movie.movie_id == MovieDirector.movie_id),
-                                                              and_(Genre.genre_name == query,
-                                                              Genre.genre_id == MovieGenre.genre_id,
-                                                              Movie.movie_id == MovieGenre.movie_id),
-                                                              Movie.title == query,
-                                                              Movie.year == query,
-                                                              Movie.format == query))
-                    print "movies queried"
-                    for record in movies:
-                        actors = self.session.query(Actor).filter(and_(Actor.actor_id == MovieActor.actor_id,
-                                                                       record.movie_id == MovieActor.movie_id))
-
-                        directors = self.session.query(Director).filter(and_(Director.director_id == MovieDirector.director_id,
-                                                                             record.movie_id == MovieDirector.movie_id))
-
-                        genres = self.session.query(Genre).filter(and_(Genre.genre_id == MovieGenre.genre_id,
-                                                                       record.movie_id == MovieGenre.movie_id))
-
-                        for a in actors:
-                            actor_string += a.full_name
-                            actor_string += ", "
-                        actor_string = actor_string[:-1]
-                        actor_string = actor_string[:-1]
-
-                        for d in directors:
-                            director_string += d.full_name
-                            director_string += ", "
-                        director_string = director_string[:-1]
-                        director_string = director_string[:-1]
- 
-                        for g in genres:
-                            genre_string += g.genre_name
-                            genre_string += ", "
-                        genre_string = genre_string[:-1]
-                        genre_string = genre_string[:-1]
-
-                        movie_list.append(record.title)
-                        movie_list.append(genre_string)
-                        movie_list.append(record.year)
-                        movie_list.append(director_string)
-                        movie_list.append(actor_string)
-                        movie_list.append(record.format)
-                        print "building movie list"
-                        actor_string = ""
-                        director_string =""
-                        genre_string = ""
-
+                
+                if query_dict['title']:
+                    t = self.session.query(Movie).filter(Movie.title == query_dict['title']).all()   
+                    print t
                 else:
-                    return None
+                    t = None
+                if query_dict['genre']:
+                    g = self.session.query(Genre).filter(Genre.genre_name == query_dict['genre']).all()   
+                    print g
+                else:
+                    g = None
+                if query_dict['actors']:
+                    a = self.session.query(Actor).filter(Actor.full_name == query_dict['actors']).all()   
+                    print a
+                else:
+                    a = None       
+                if query_dict['director']:
+                    d = self.session.query(Director).filter(Director.full_name == query_dict['director']).all()
+                    print d
+                else:
+                    d = None
 
-                movie_list = self.list_builder(movie_list, 6)
-                print "building 2D movie list"
-                return movie_list
+
+                return None
 
         # view_collection method
         def view_collection(self):
@@ -244,27 +197,12 @@ class Database(object):
 
                 # query the database for all movies in the Movie table
                 t = self.session.query(Movie).all()
-                a = self.session.query(Actor).all()
-                d = self.session.query(Director).all()
-                g = self.session.query(Genre).all()
-                ma = self.session.query(MovieActor).all()
-                md = self.session.query(MovieDirector).all()
-                mg = self.session.query(MovieGenre).all()
-
-                for record in t:
-                    print record
-                for record in a:
-                    print record
-                for record in d:
-                    print record
-                for record in g:
-                    print record
-                for record in ma:
-                    print record
-                for record in md:
-                    print record
-                for record in mg:
-                    print record
+                #a = self.session.query(Actor).all()
+                #d = self.session.query(Director).all()
+                #g = self.session.query(Genre).all()
+                #ma = self.session.query(MovieActor).all()
+                #md = self.session.query(MovieDirector).all()
+                #mg = self.session.query(MovieGenre).all()
 
                 for i in range(len(t)):
                         # find all the actors which star in the current movie

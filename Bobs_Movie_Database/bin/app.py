@@ -11,7 +11,7 @@ def index():
 @app.route('/search/', methods=['GET', 'POST'])
 def search():
 	if request.method == 'POST':
-		form_data = request.form['query']
+		form_data = request.form
 		search_results = moviedb.search(form_data)
 		if search_results == None:
 			return render_template('main.html')
