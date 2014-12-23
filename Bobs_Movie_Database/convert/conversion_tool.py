@@ -11,7 +11,7 @@ moviedb = bmdb_orm.Database()
 
 temp_dict = {'title': '', 'director': '', 'actors': '', 'genre': '', 'year': ''}
 
-with open("bmdb.txt", 'a+') as f:
+with open("bmdb_test.txt", 'a+') as f:
 	data = f.read()
 
  # Remove the last ';' from the end of the string.
