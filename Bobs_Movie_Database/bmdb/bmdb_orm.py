@@ -1,4 +1,4 @@
-# bmdb.py version 3.2
+# bmdb_orm.py version 3.3
 # Written by Todd Smith
 # 10/15/2013
 # Licence:
@@ -156,10 +156,29 @@ class Database(object):
                 list_2D.sort()
                 return list_2D
 
+        # string_formatter takes an input string and does two things: First it capitolizes the first letter of each word.
+        # Second, it checks if the word 'The' is the first word in the string. If so, it moves it to the end.
         def string_formatter(self, input_str):
+                # capitolize the first letter of each word
                 input_str = " ".join(word[0].upper() + word[1:].lower() for word in input_str.split())
-                return input_str
+                # check if the input is just 'The'. This prevents the program from crashing if the user only searches for 'the'
+                if input_str == 'The':
+                    return input_str
+                # check if the first word is 'The' so that we can move it to the end. This preserves the title formatting used in the database.
+                # for example, the movie title "The Fift Element" is stored as "Fifth Element, The"
+                elif 'The' in input_str[0:3]:
+                    input_str = input_str.split()
+                    temp_str = input_str.pop(0)
+                    input_str[-1] = input_str[-1]+','
+                    input_str.append(temp_str)
+                    input_str = ' '.join(input_str)
+                    print input_str
+                    return input_str
+                else:
+                    return input_str
 
+        # list_fetcher() takes a list of movie titles and gets all the actor, director, and genre data for each movie from the database.
+        # it then organises and returns all the data in a 2D list.
         def list_fetcher(self, t):
             # initialize the movie list and some strings
                 movie_list = []
@@ -236,7 +255,7 @@ class Database(object):
                         # for each title in the list, capitalize the first letter of each word in the title to match the formatting
                         # of the data in the SQL database
                         query_title = self.string_formatter(query_dict['title'])
-                        t = self.session.query(Movie).filter(Movie.title == query_title).all()
+                        t = self.session.query(Movie).filter(Movie.title.like('%' + query_title + '%')).all()
                         movie_list = self.list_fetcher(t)
                         return movie_list   
 
@@ -324,7 +343,7 @@ class Database(object):
                 format = format[:-1]
                 format = format[:-1]
                 # capitalize the first letter of each word in the movie title
-                title = " ".join(word[0].upper() + word[1:].lower() for word in new_movie['title'].split())
+                title = self.string_formatter(new_movie['title'])
                 # query the database to see if the movie already exists in the Movie table
                 movie = self.session.query(Movie).filter(Movie.title == title).first()
                 # if the movie already exists, leave add_new() without updating the database
@@ -338,7 +357,7 @@ class Database(object):
                 actors = new_movie['actors'].split(", ")        
                 for i in range(len(actors)):
                         # for each actor in the list, capitalize the first letter in their first and last names
-                        actors[i] = " ".join(word[0].upper() + word[1:].lower() for word in actors[i].split())
+                        actors[i] = self.string_formatter(actors[i])
                         # query the database to see if the current actor already exists in the Actor table
                         actor = self.session.query(Actor).filter(Actor.full_name == actors[i]).first()
                         # if the actor already exists, create the movie/actor relation in the MovieActor table
@@ -356,7 +375,7 @@ class Database(object):
                 directors = new_movie['director'].split(", ")
                 for i in range(len(directors)):
                         # for each director in the list, capitalize the first letter in their first and last names
-                        directors[i] = " ".join(word[0].upper() + word[1:].lower() for word in directors[i].split())
+                        directors[i] = self.string_formatter(directors[i])
                         # query the database to see if the current director already exists in the Director table
                         director = self.session.query(Director).filter(Director.full_name == directors[i]).first()
                         # if the director already exists, create the movie/director relation in the MovieDirector table
@@ -372,7 +391,7 @@ class Database(object):
                 genres = new_movie['genre'].split(", ")
                 for i in range(len(genres)):
                         # for each genre in the list, capitalize the first letter
-                        genres[i] = " ".join(word[0].upper() + word[1:].lower() for word in genres[i].split())
+                        genres[i] = self.string_formatter(genres[i])
                         # query the database to see if the current genre already exists in the Genre table
                         genre = self.session.query(Genre).filter(Genre.genre_name == genres[i]).first()
                         # if the genre already exists, create the movie/genre relation in the MovieGenre table
@@ -391,7 +410,7 @@ class Database(object):
 
         def delete_movie(self, movie_input):
             delete_me = movie_input['title']
-            delete_me = " ".join(word[0].upper() + word[1:].lower() for word in delete_me.split())
+            delete_me = self.string_formatter(delete_me)
             t = self.session.query(Movie).filter(Movie.title == delete_me).one()
             self.session.delete(t)
             self.session.commit()
@@ -399,12 +418,18 @@ class Database(object):
 
         # function for debugging only
         def db_test(self):
-            actor_list =[]
+            all_titles = self.session.query(Movie)
+            all_actors = self.session.query(Actor)
+            all_directors = self.session.query(Director)
+            all_genres = self.session.query(Genre)
+            all_movie_actor = self.session.query(MovieActor)
+            all_movie_director = self.session.query(MovieDirector)
+            all_movie_genre = self.session.query(MovieGenre)
 
-            all_actors = self.session.query(Actor).all()
-
-            for record in all_actors:
-                actor_list.append(record.full_name)
-            actor_list.sort()
-            for i in range(len(actor_list)):
-                print actor_list[i]
+            print "Number of movies: " + str(all_titles.count())
+            print "Number of actors: " + str(all_actors.count())
+            print "Number of directors: " + str(all_directors.count())
+            print "Number of genres: " + str(all_genres.count())
+            print "Number of Movie-Actor pairs: " + str(all_movie_actor.count())
+            print "Number of Movie-Director pairs: " + str(all_movie_director.count())
+            print "Number of Movie-Genre pairs: " + str(all_movie_genre.count())

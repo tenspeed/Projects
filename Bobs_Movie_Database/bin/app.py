@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, url_for, redirect
 from bmdb import bmdb_orm
+import webbrowser
+
+# open main.html in the default webbrowser when the app is run
+new = 2
+url = "http://localhost:5000/"
+webbrowser.open(url,new=new)
 
 app = Flask(__name__)
 moviedb = bmdb_orm.Database()
