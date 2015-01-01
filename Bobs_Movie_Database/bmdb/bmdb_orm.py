@@ -330,18 +330,19 @@ class Database(object):
         # and formats the strings, then adds them to the proper tables in the database
         def add_new(self, new_movie):
                 #find out what formats exist
-                format = ""
+                format_str = ""
                 for i in range(1,5):
                         try:
                                 # construct one long string of all the formats that turn up, separated by commas
-                                format += new_movie[formats[str(i)]]
-                                format += ", "
+                                format_str += new_movie[formats[str(i)]]
+                                format_str += ", "
                         except:
                                 pass
 
                 # remove the last comma/space from the format string
-                format = format[:-1]
-                format = format[:-1]
+                format_str = format_str[:-1]
+                format_str = format_str[:-1]
+                print format_str
                 # capitalize the first letter of each word in the movie title
                 title = self.string_formatter(new_movie['title'])
                 # query the database to see if the movie already exists in the Movie table
@@ -350,7 +351,7 @@ class Database(object):
                 if movie:
                     return None
                 # if the movie isn't already in the database, add it to the Movie table
-                movie = Movie(title, new_movie['year'], format)
+                movie = Movie(title, new_movie['year'], format_str)
                
                 # parse the text in the actors dictionary
                 # take the incoming string of all actors in the movie and split it into a list of individual actors

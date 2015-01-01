@@ -31,17 +31,19 @@ for i in range(len(movies)):
 	temp_dict['year'] = movies[i][3]
 	temp_dict['actors'] = movies[i][5]
 
-	formats = movies[i][4].split(',')
+	formats = movies[i][4].split(', ')
+	print formats
 
-	if 'dvd' in formats:
-		temp_dict['DVD'] = 'DVD'
+	if 'dvd'in formats:
+		temp_dict["DVD"] = "DVD"
 	if 'bluray' in formats:
-		temp_dict['Blu-ray'] = 'Blu-ray'
+		temp_dict["Blu-ray"] = "Blu-ray"
 	if 'vhs' in formats:
-		temp_dict['VHS'] = 'VHS'
+		temp_dict["VHS"] = "VHS"
 	if 'digital' in formats:
-		temp_dict['Digital'] = 'Digital'
+		temp_dict["Digital"] = "Digital"
 
+	print temp_dict
 	moviedb.add_new(temp_dict)
 
 	if 'DVD' in temp_dict:	
@@ -53,5 +55,4 @@ for i in range(len(movies)):
 	if 'Digital' in temp_dict:
 		del temp_dict['Digital']
 
-
-
+	#print temp_dict
